@@ -48,6 +48,27 @@
         </span>
       </el-form-item>
 
+      <el-form-item prop="captcha.code" class="captcha-code-form">
+        <span class="svg-container">
+          <svg-icon icon-class="example" />
+        </span>
+        <el-input
+          ref="captcha.code"
+          v-model="loginForm.captcha.code"
+          placeholder="请输入验证码结果"
+          name="captcha.code"
+          type="text"
+          tabindex="3"
+          auto-complete="on"
+        >
+          <template slot="append">
+            <span class="code-container">
+              <img alt="captcha.imgBase64" :src="imgBase64" @click="getCaptchaBase64">
+            </span>
+          </template>
+        </el-input>
+      </el-form-item>
+
       <el-button
         :loading="loading"
         type="primary"
@@ -61,6 +82,10 @@
 </template>
 
 <script>
+import { captcha } from '@/api/captcha'
+import { getRsaKey } from '@/api/encrypt'
+import { JSEncrypt } from 'jsencrypt'
+
 export default {
   name: 'Login',
   data() {
@@ -78,18 +103,31 @@ export default {
         callback()
       }
     }
+    const validateCode = (rule, value, callback) => {
+      if (value.length === 0) {
+        callback(new Error('验证码不能为空'))
+      } else {
+        callback()
+      }
+    }
     return {
       loginForm: {
         account: '',
-        password: ''
+        password: '',
+        captcha: {
+          code: '',
+          uuid: ''
+        }
       },
       loginRules: {
-        account: [{ required: true, trigger: 'blur', validator: validateAccount }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        'account': [{ required: true, trigger: 'blur', validator: validateAccount }],
+        'password': [{ required: true, trigger: 'blur', validator: validatePassword }],
+        'captcha.code': [{ required: true, trigger: 'blur', validator: validateCode }]
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
+      imgBase64: undefined
     }
   },
   watch: {
@@ -99,6 +137,9 @@ export default {
       },
       immediate: true
     }
+  },
+  created() {
+    this.getCaptchaBase64()
   },
   methods: {
     showPwd() {
@@ -112,13 +153,19 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
+      this.$refs.loginForm.validate(async valid => {
         if (valid) {
           this.loading = true
+          const encryptor = new JSEncrypt()
+          const encryptKey = await this.getEncryptKey()
+          encryptor.setPublicKey(encryptKey)
+          this.loginForm.password = encryptor.encrypt(this.loginForm.password)
           this.$store.dispatch('auth/login', this.loginForm).then(() => {
             this.$router.push({ path: this.redirect || '/' })
+            this.loginForm.password = ''
             this.loading = false
           }).catch(() => {
+            this.loginForm.password = ''
             this.loading = false
           })
         } else {
@@ -126,6 +173,16 @@ export default {
           return false
         }
       })
+    },
+    getCaptchaBase64() {
+      captcha().then(response => {
+        this.loginForm.captcha.uuid = response.data.uuid
+        this.imgBase64 = 'data:image/gif;base64,' + response.data.imgBase64
+      })
+    },
+    async getEncryptKey() {
+      const response = await getRsaKey()
+      return response.msg
     }
   }
 }
@@ -210,6 +267,24 @@ $light_gray: #eee;
     }
   }
 
+  .captcha-code-form {
+
+    .el-input {
+      width: 90%;
+      display: inline-table;
+
+    }
+
+    .code-container {
+      padding-top: 5px;
+      display: inline-block;
+      img {
+        height: 40px;
+        display: inline-block;
+      }
+    }
+  }
+
   .svg-container {
     padding: 6px 5px 6px 15px;
     color: $dark_gray;
@@ -222,11 +297,11 @@ $light_gray: #eee;
     position: relative;
 
     .title {
-      font-size: 26px;
+      font-weight: bolder;
+      font-size: 35px;
       color: $light_gray;
       margin: 0px auto 40px auto;
       text-align: center;
-      font-weight: bold;
     }
   }
 

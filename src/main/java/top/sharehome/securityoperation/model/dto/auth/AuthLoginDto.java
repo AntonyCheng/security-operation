@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import top.sharehome.securityoperation.common.validate.PostGroup;
 import top.sharehome.securityoperation.config.captcha.model.Captcha;
+import top.sharehome.securityoperation.config.encrypt.annotation.RSAEncrypt;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -32,6 +33,7 @@ public class AuthLoginDto implements Serializable {
      * 密码
      */
     @NotBlank(message = "密码不能为空", groups = {PostGroup.class})
+    @RSAEncrypt
     private String password;
 
     /**

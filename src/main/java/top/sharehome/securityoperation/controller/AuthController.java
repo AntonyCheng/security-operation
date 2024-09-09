@@ -10,6 +10,7 @@ import top.sharehome.securityoperation.common.base.R;
 import top.sharehome.securityoperation.common.base.ReturnCode;
 import top.sharehome.securityoperation.common.validate.PostGroup;
 import top.sharehome.securityoperation.config.captcha.annotation.EnableCaptcha;
+import top.sharehome.securityoperation.config.encrypt.annotation.RSADecrypt;
 import top.sharehome.securityoperation.config.log.annotation.ControllerLog;
 import top.sharehome.securityoperation.config.log.enums.Operator;
 import top.sharehome.securityoperation.exception.customize.CustomizeReturnException;
@@ -77,6 +78,7 @@ public class AuthController {
     @PostMapping("/login")
     @EnableCaptcha
     @ControllerLog(description = "用户登录", operator = Operator.OTHER)
+    @RSADecrypt
     public R<Map<String, Object>> login(@RequestBody @Validated({PostGroup.class}) AuthLoginDto authLoginDto) {
         AuthLoginVo loginUser = authService.login(authLoginDto);
         LoginUtils.login(loginUser);
