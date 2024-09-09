@@ -1,0 +1,16 @@
+
+${AnsiColor.BRIGHT_CYAN} _____                      _ _         _____                      _   _
+${AnsiColor.BRIGHT_CYAN}/  ___|                    (_) |       |  _  |                    | | (_)
+${AnsiColor.BRIGHT_CYAN}\ `--.  ___  ___ _   _ _ __ _| |_ _   _| | | |_ __   ___ _ __ __ _| |_ _  ___  _ __
+${AnsiColor.BRIGHT_CYAN} `--. \/ _ \/ __| | | | '__| | __| | | | | | | '_ \ / _ \ '__/ _` | __| |/ _ \| '_ \
+${AnsiColor.BRIGHT_CYAN}/\__/ /  __/ (__| |_| | |  | | |_| |_| \ \_/ / |_) |  __/ | | (_| | |_| | (_) | | | |
+${AnsiColor.BRIGHT_CYAN}\____/ \___|\___|\__,_|_|  |_|\__|\__, |\___/| .__/ \___|_|  \__,_|\__|_|\___/|_| |_|
+${AnsiColor.BRIGHT_CYAN}                                   __/ |     | |
+${AnsiColor.BRIGHT_CYAN}                                  |___/      |_|
+${AnsiColor.BRIGHT_CYAN}Spring Boot Version: v${spring-boot.version}
+${AnsiColor.BRIGHT_CYAN}Template Base Info:
+${AnsiColor.BRIGHT_CYAN}- Application Name: ${spring.application.name}
+${AnsiColor.BRIGHT_CYAN}- Server Domain: ${server.domain}
+${AnsiColor.BRIGHT_CYAN}- Server Port: ${server.port}
+${AnsiColor.BRIGHT_CYAN}- Servlet Context Path: ${server.servlet.context-path}
+${AnsiStyle.NORMAL}

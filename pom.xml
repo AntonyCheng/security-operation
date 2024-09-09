@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 项目概况 -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>top.sharehome</groupId>
+    <artifactId>security-operation</artifactId>
+    <version>v1.0.0</version>
+    <name>security-operation</name>
+    <description>security-operation</description>
+    <url>https://github.com/AntonyCheng/security-operation</url>
+    <inceptionYear>2024</inceptionYear>
+
+    <!-- 项目开源许可证 -->
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <!-- 开发者概况 -->
+    <developers>
+        <developer>
+            <id>AntonyCheng</id>
+            <name>WuChengCheng</name>
+            <email>1911261716@qq.com</email>
+            <roles>
+                <role>Owner</role>
+            </roles>
+            <timezone>GMT+8</timezone>
+        </developer>
+    </developers>
+
+    <!-- 项目版本控制 -->
+    <scm>
+        <connection>https://github.com/AntonyCheng/security-operation.git</connection>
+        <developerConnection>
+            scm:git:ssh://git@github.com:AntonyCheng/security-operation.git
+        </developerConnection>
+        <url>https://github.com/AntonyCheng/security-operation</url>
+    </scm>
+
+    <!-- 依赖版本控制 -->
+    <properties>
+        <!-- Java相关 -->
+        <java.version>17</java.version>
+        <!-- SpringBoot相关 -->
+        <spring.boot.version>3.2.5</spring.boot.version>
+        <!-- Spring AI相关 -->
+        <spring.ai.version>1.1.0</spring.ai.version>
+        <!-- Netty相关 -->
+        <netty.version>4.1.112.Final</netty.version>
+        <!-- 数据驱动层相关 -->
+        <mysql.version>8.0.33</mysql.version>
+        <mybatis.spring.version>3.0.4</mybatis.spring.version>
+        <mybatis.plus.starter.version>3.5.7</mybatis.plus.starter.version>
+        <shardingsphere.version>5.5.0</shardingsphere.version>
+        <druid.starter.version>1.2.23</druid.starter.version>
+        <!-- 工具类相关 -->
+        <lombok.version>1.18.34</lombok.version>
+        <hutool.version>5.8.31</hutool.version>
+        <commons.lang3.version>3.16.0</commons.lang3.version>
+        <commons.io.version>2.16.1</commons.io.version>
+        <commons.codec.version>1.17.1</commons.codec.version>
+        <commons.pool2.version>2.12.0</commons.pool2.version>
+        <commons.collections4.version>4.5.0-M2</commons.collections4.version>
+        <commons.math3.version>3.6.1</commons.math3.version>
+        <commons.compress.version>1.27.1</commons.compress.version>
+        <ok.http3.version>4.12.0</ok.http3.version>
+        <ok.io.version>3.9.0</ok.io.version>
+        <ip2region.version>2.7.0</ip2region.version>
+        <knife4j.openapi3.starter.version>4.5.0</knife4j.openapi3.starter.version>
+        <fastjson2.version>2.0.52</fastjson2.version>
+        <!-- 权限校验相关 -->
+        <sa.token.version>1.39.0</sa.token.version>
+        <!-- 缓存相关 -->
+        <redisson.version>3.35.0</redisson.version>
+        <caffeine.version>3.1.8</caffeine.version>
+        <!-- ElasticSearch相关 -->
+        <elasticsearch.version>7.14.0</elasticsearch.version>
+        <logstash.logback.version>7.3</logstash.logback.version>
+        <easy.es.starter.version>2.0.0</easy.es.starter.version>
+        <!-- 对象存储相关 -->
+        <tencent.cos.version>5.6.229</tencent.cos.version>
+        <ali.oss.version>3.18.1</ali.oss.version>
+        <ali.jaxb.version>2.3.1</ali.jaxb.version>
+        <ali.activation.version>1.1.1</ali.activation.version>
+        <minio.version>8.5.12</minio.version>
+        <!-- 文件操作相关 -->
+        <poi.version>5.3.0</poi.version>
+        <poi.tl.version>1.12.2</poi.tl.version>
+        <easy.excel.version>4.0.2</easy.excel.version>
+        <x.easypdf.version>3.1.0</x.easypdf.version>
+        <thymeleaf.version>3.1.2.RELEASE</thymeleaf.version>
+        <jte.version>2.3.2</jte.version>
+        <!-- 外部平台相关 -->
+        <xxl.job.version>2.4.1</xxl.job.version>
+        <powerjob.version>4.3.9</powerjob.version>
+        <spring.boot.admin.client.version>2.7.9</spring.boot.admin.client.version>
+        <canal.version>1.1.7</canal.version>
+        <!-- 插件版本 -->
+        <maven.compiler.plugin.verison>3.13.0</maven.compiler.plugin.verison>
+        <!-- 【其他】修复警告 -->
+        <antlr.fix.version>4.10.1</antlr.fix.version>
+        <!-- 【其他】测试依赖 -->
+        <opencc4j.version>1.8.1</opencc4j.version>
+    </properties>
+
+    <!-- 依赖管理 -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>group.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring.ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 依赖详情 -->
+    <dependencies>
+        <!-- SpringBoot 依赖配置 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <!-- 若要使用Undertow作为服务器，那就需要排除Tomcat的相关依赖，该模板默认使用Undertow -->
+                <exclusion>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Web 容器使用 Undertow 性能更强（若要使用Undertow，必须将上方的Tomcat排除掉，同时编写top.sharehome.securityoperation.config.undertow.UndertowConfiguration） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-undertow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring AI相关 -->
+        <dependency>
+            <groupId>group.springframework.ai</groupId>
+            <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>group.springframework.ai</groupId>
+            <artifactId>spring-ai-zhipuai-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>group.springframework.ai</groupId>
+            <artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Netty 依赖配置 -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+
+        <!-- 数据驱动层依赖配置 -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>${mysql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>${mybatis.spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>${mybatis.plus.starter.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>mybatis-spring</artifactId>
+                    <groupId>org.mybatis</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+            <version>${mybatis.plus.starter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-jdbc</artifactId>
+            <version>${shardingsphere.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.shardingsphere</groupId>
+                    <artifactId>shardingsphere-test-util</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-3-starter</artifactId>
+            <version>${druid.starter.version}</version>
+        </dependency>
+
+        <!-- Lombok 依赖配置 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+
+        <!-- Hutool 依赖配置-->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
+
+        <!-- Apache Commons 依赖配置 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons.codec.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>${commons.pool2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${commons.collections4.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>${commons.math3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${commons.compress.version}</version>
+        </dependency>
+
+
+        <!-- Ok Http 依赖配置 -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${ok.http3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okio</groupId>
+            <artifactId>okio</artifactId>
+            <version>${ok.io.version}</version>
+        </dependency>
+
+        <!-- FastJSON2 依赖配置 -->
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${fastjson2.version}</version>
+        </dependency>
+
+        <!-- 离线 IP 地址定位库 ip2region 依赖配置-->
+        <dependency>
+            <groupId>org.lionsoul</groupId>
+            <artifactId>ip2region</artifactId>
+            <version>${ip2region.version}</version>
+        </dependency>
+
+        <!-- Sa-Token 依赖配置（该初始化模板提供session+cookie和redis+token两种方式，此处依赖配置是redis+token，所以必须保证redis可用） -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+            <version>${sa.token.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-core</artifactId>
+            <version>${sa.token.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-jwt</artifactId>
+            <version>${sa.token.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis-jackson</artifactId>
+            <version>${sa.token.version}</version>
+        </dependency>
+
+        <!-- Redis 依赖配置 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
+        <!-- Redisson 依赖配置 -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>${redisson.version}</version>
+        </dependency>
+
+        <!-- Caffeine 依赖配置 -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>${caffeine.version}</version>
+        </dependency>
+
+        <!-- RabbitMQ 依赖配置 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Elastic Search 依赖配置 -->
+        <dependency>
+            <groupId>org.dromara.easy-es</groupId>
+            <artifactId>easy-es-boot-starter</artifactId>
+            <version>${easy.es.starter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <!-- Logstash 依赖配置 -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash.logback.version}</version>
+        </dependency>
+
+        <!-- 腾讯云 COS 依赖配置 -->
+        <dependency>
+            <groupId>com.qcloud</groupId>
+            <artifactId>cos_api</artifactId>
+            <version>${tencent.cos.version}</version>
+        </dependency>
+
+        <!-- 阿里云 OSS 依赖配置 -->
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+            <version>${ali.oss.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${ali.jaxb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>${ali.activation.version}</version>
+        </dependency>
+
+        <!-- MinIO 依赖配置 -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>${minio.version}</version>
+        </dependency>
+
+        <!-- Office IO 依赖配置 -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.deepoove</groupId>
+            <artifactId>poi-tl</artifactId>
+            <version>${poi.tl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>${easy.excel.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>poi-ooxml-schemas</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- PDF 操作依赖配置 -->
+        <dependency>
+            <groupId>org.dromara.x-easypdf</groupId>
+            <artifactId>x-easypdf</artifactId>
+            <version>${x.easypdf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+            <version>${thymeleaf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>gg.jte</groupId>
+            <artifactId>jte</artifactId>
+            <version>${jte.version}</version>
+        </dependency>
+        
+        <!-- Knife4j 依赖配置 -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <version>${knife4j.openapi3.starter.version}</version>
+        </dependency>
+
+        <!-- XXL-JOB 分布式定时任务依赖配置 -->
+        <dependency>
+            <groupId>com.xuxueli</groupId>
+            <artifactId>xxl-job-core</artifactId>
+            <version>${xxl.job.version}</version>
+        </dependency>
+
+        <!-- PowerJob 分布式任务调度依赖配置 -->
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-worker-spring-boot-starter</artifactId>
+            <version>${powerjob.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.powerjob</groupId>
+            <artifactId>powerjob-official-processors</artifactId>
+            <version>${powerjob.version}</version>
+        </dependency>
+
+        <!-- Spring Boot Admin 监控平台依赖配置 -->
+        <dependency>
+            <groupId>de.codecentric</groupId>
+            <artifactId>spring-boot-admin-client</artifactId>
+            <version>${spring.boot.admin.client.version}</version>
+        </dependency>
+
+        <!-- Canal 客户端依赖配置 -->
+        <dependency>
+            <groupId>com.alibaba.otter</groupId>
+            <artifactId>canal.client</artifactId>
+            <version>${canal.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.otter</groupId>
+            <artifactId>canal.common</artifactId>
+            <version>${canal.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.otter</groupId>
+            <artifactId>canal.protocol</artifactId>
+            <version>${canal.version}</version>
+        </dependency>
+
+        <!-- 修复 ANTLR Tool 版本不一致警告-->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>${antlr.fix.version}</version>
+        </dependency>
+
+        <!-- [测试所需依赖] 中文繁简体转换 -->
+        <dependency>
+            <groupId>com.github.houbb</groupId>
+            <artifactId>opencc4j</artifactId>
+            <version>${opencc4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- 项目构建概况 -->
+    <build>
+        <!-- 构建插件 -->
+        <plugins>
+            <!-- maven 打包 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 指定应用程序的入口类 -->
+                    <mainClass>top.sharehome.securityoperation.MainApplication</mainClass>
+                    <!-- 指定打包的布局类型为 JAR -->
+                    <layout>JAR</layout>
+                    <!-- 生成可执行的 JAR 文件 -->
+                    <executable>true</executable>
+                    <!-- 添加资源到 JAR 文件中 -->
+                    <addResources>true</addResources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.verison}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <!-- 项目 resources 概况 -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/webapp/</directory>
+            </resource>
+        </resources>
+    </build>
+
+    <!-- 指定依赖仓库 -->
+    <repositories>
+        <repository>
+            <id>public</id>
+            <name>ALiCloud maven</name>
+            <url>https://maven.aliyun.com/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+    <!-- 指定插件仓库 -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>public</id>
+            <name>aliyun maven</name>
+            <url>https://maven.aliyun.com/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>
