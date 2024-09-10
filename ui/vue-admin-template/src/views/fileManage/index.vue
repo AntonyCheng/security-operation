@@ -61,7 +61,7 @@
           </template>
           <template>
             <template>
-              <el-button type="success" size="small" style="width: 100px" @click="handleExport">导出文件信息</el-button>
+              <el-button type="success" size="small" style="width: 150px" @click="handleExport">导出文件信息</el-button>
             </template>
           </template>
         </el-collapse-item>
@@ -103,8 +103,8 @@
               style="width: 100px; height: 100px"
               :src="scope.row.url"
               :preview-src-list="[scope.row.url]"
-              :lazy="true">
-            </el-image>
+              :lazy="true"
+            />
           </template>
         </el-table-column>
         <el-table-column

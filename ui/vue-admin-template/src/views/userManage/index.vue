@@ -69,10 +69,13 @@
           </template>
           <template>
             <template>
-              <el-button type="primary" size="small" style="width: 100px" @click="openAddDialog">添加{{ role==='admin'?'项目经理':'普通用户' }}</el-button>
+              <el-button type="primary" size="small" style="width: 150px" @click="openAddDialog">添加{{ role==='admin'? '项目经理' : '普通用户' }}</el-button>
             </template>
             <template>
-              <el-button v-if="role === 'admin'" type="success" size="small" style="width: 100px" @click="handleExport">导出用户信息</el-button>
+              <el-button type="primary" size="small" style="width: 150px" @click="openImportDialog">导入{{ role==='admin'? '项目经理' : '普通用户' }}信息</el-button>
+            </template>
+            <template>
+              <el-button v-if="role === 'admin'" type="success" size="small" style="width: 150px" @click="handleExport">导出用户信息</el-button>
             </template>
           </template>
         </el-collapse-item>
@@ -236,6 +239,27 @@
       </el-dialog>
     </template>
     <template>
+      <el-dialog :show-close="false" title="导入用户" :visible.sync="importDialogVisible" @close="handleCancelImport">
+        <el-upload
+          drag
+          action=""
+          :limit="1"
+          :show-file-list="false"
+          :file-list="fileList"
+          :before-upload="handleBefore"
+          :http-request="handleSubmit"
+          :on-success="handleSuccess"
+        >
+          <i class="el-icon-upload" />
+          <div class="el-upload__text"><em>点击上传</em>（仅支持xls/xlsx文件，且不超过20MB）</div>
+        </el-upload>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="handleExportTemplate">下载模板</el-button>
+          <el-button @click="handleCancelImport">取 消</el-button>
+        </div>
+      </el-dialog>
+    </template>
+    <template>
       <el-dialog :show-close="false" :title="updateType === 'info'?'修改信息':'修改密码'" :visible.sync="updateDialogVisible" @close="handleCancelUpdate">
         <el-form v-if="updateType==='info'" ref="updateForm" :model="updateForm" label-width="80px">
           <el-form-item
@@ -316,7 +340,17 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { adminAddUser, adminDeleteUser, adminExportExcel, adminPageUser, adminResetPassword, adminUpdateInfo, adminUpdateState } from '@/api/user'
+import {
+  adminAddUser,
+  adminDeleteUser,
+  adminExportExcel,
+  adminPageUser,
+  adminResetPassword,
+  adminUpdateInfo,
+  adminUpdateState,
+  adminExportUserTemplate,
+  adminImportUser
+} from '@/api/user'
 import { Loading, Message } from 'element-ui'
 import { getRsaKey } from '@/api/encrypt'
 import { JSEncrypt } from 'jsencrypt'
@@ -325,6 +359,7 @@ export default {
   name: 'UserManage',
   data() {
     return {
+      fileList: [],
       addLoading: false,
       queryLoading: false,
       updateLoading: false,
@@ -372,6 +407,10 @@ export default {
         password: undefined,
         name: undefined,
         email: undefined
+      },
+      importDialogVisible: false,
+      importForm: {
+        file: undefined
       },
       updateDialogVisible: false,
       updateType: undefined,
@@ -513,6 +552,72 @@ export default {
       this.addDialogVisible = false
       this.resetAddForm()
       this.addLoading = false
+    },
+    openImportDialog() {
+      this.importDialogVisible = true
+    },
+    handleBefore(file) {
+      const isXLS = file.name.endsWith('.xls')
+      const isXLSX = file.name.endsWith('.xlsx')
+      const isLt20M = file.size / 1024 / 1024 < 20
+      if (!isXLS && !isXLSX) {
+        this.$message.error('上传文件只能是 XLS 或 XLSX 格式!')
+      }
+      if (!isLt20M) {
+        this.$message.error('上传文件大小不能超过 20MB!')
+      }
+      return (isXLS || isXLSX) && isLt20M
+    },
+    handleSubmit(options) {
+      const { file } = options
+      const formData = new FormData()
+      formData.append('file', file)
+      return adminImportUser(formData).then(response => {
+        this.fileList = []
+        this.pageLoading = true
+        adminPageUser(this.queryForm).then(response => {
+          this.queryResult = response.data
+          this.pageLoading = false
+        })
+        Message.success(response.msg)
+      }).catch(error => {
+        this.fileList = []
+        return error
+      }).finally(() => {
+        this.importDialogVisible = false
+      })
+    },
+    handleSuccess(response) {
+      console.log('response:', response)
+    },
+    handleCancelImport() {
+      this.importDialogVisible = false
+    },
+    handleExportTemplate() {
+      const downloadLoadingInstance = Loading.service({
+        text: '正在下载数据，请稍候',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+      adminExportUserTemplate().then(async data => {
+        if (data) {
+          const blob = new Blob([data.data])
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = decodeURIComponent(data.headers['download-filename'])
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        } else {
+          Message.error('下载失败')
+        }
+        downloadLoadingInstance.close()
+      }).catch(() => {
+        Message.error('下载失败')
+        downloadLoadingInstance.close()
+      })
     },
     openUpdateDialog(data1, data2) {
       this.updateType = data1

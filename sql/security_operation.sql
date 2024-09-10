@@ -22,6 +22,10 @@ CREATE TABLE `t_feedback`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '任务反馈表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- Records of t_feedback
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for t_file
 -- ----------------------------
 DROP TABLE IF EXISTS `t_file`;
@@ -39,6 +43,10 @@ CREATE TABLE `t_file`  (
   `del_flag` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除（0表示未删除，1表示已删除）',
   PRIMARY KEY (`file_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文件表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of t_file
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for t_log
@@ -65,6 +73,10 @@ CREATE TABLE `t_log`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '日志表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
+-- Records of t_log
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for t_project
 -- ----------------------------
 DROP TABLE IF EXISTS `t_project`;
@@ -79,6 +91,10 @@ CREATE TABLE `t_project`  (
   `del_flag` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除（0表示未删除，1表示已删除）',
   PRIMARY KEY (`project_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '项目表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of t_project
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for t_project_user
@@ -96,6 +112,10 @@ CREATE TABLE `t_project_user`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '项目用户关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
+-- Records of t_project_user
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for t_task
 -- ----------------------------
 DROP TABLE IF EXISTS `t_task`;
@@ -111,6 +131,10 @@ CREATE TABLE `t_task`  (
   `del_flag` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除（0表示未删除，1表示已删除）',
   PRIMARY KEY (`task_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '任务表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of t_task
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for t_user
@@ -136,6 +160,6 @@ CREATE TABLE `t_user`  (
 -- ----------------------------
 -- Records of t_user
 -- ----------------------------
-INSERT INTO `t_user` VALUES (1832977688920305666, '0000001', 'admin', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'AntonyCheng', 1833338274703179777, 'admin', 0, '2024-09-09 11:01:51', '2024-09-10 16:35:42', 0);
+INSERT INTO `t_user` VALUES (1832977688920305666, '0000001', 'admin', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'AntonyCheng', 1833338274703179777, 'admin', 0, '2024-09-09 11:01:51', '2024-09-10 18:47:49', 0);
 
 SET FOREIGN_KEY_CHECKS = 1;
