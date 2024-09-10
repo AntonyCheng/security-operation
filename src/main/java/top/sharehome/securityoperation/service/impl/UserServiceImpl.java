@@ -106,6 +106,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .setPassword(adminUserAddDto.getPassword())
                 .setEmail(adminUserAddDto.getEmail())
                 .setName(adminUserAddDto.getName());
+        if (StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_ADMIN)) {
+            user.setRole(Constants.ROLE_MANAGER);
+        } else {
+            user.setRole(Constants.ROLE_USER);
+        }
         int insertResult = userMapper.insert(user);
         if (insertResult == 0) {
             throw new CustomizeReturnException(ReturnCode.ERRORS_OCCURRED_IN_THE_DATABASE_SERVICE);
@@ -122,6 +127,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_ADMIN)) {
             throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对管理员进行操作");
+        }
+        // 如果是项目经理，还不能对项目经理角色的用户进行操作
+        if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER) && StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_MANAGER)) {
+            throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对项目经理进行操作");
         }
         // 删除用户信息
         int userDeleteResult = userMapper.deleteById(id);
@@ -147,6 +156,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_ADMIN)) {
             throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对管理员进行操作");
+        }
+        // 如果是项目经理，还不能对项目经理角色的用户进行操作
+        if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER) && StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_MANAGER)) {
+            throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对项目经理进行操作");
         }
         // 禁止添加非自身的已存在同名账号
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -186,6 +199,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_ADMIN)) {
             throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对管理员进行操作");
         }
+        // 如果是项目经理，还不能对项目经理角色的用户进行操作
+        if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER) && StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_MANAGER)) {
+            throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对项目经理进行操作");
+        }
         // 根据数据库中用户状态做出更新
         LambdaUpdateWrapper<User> userLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         if (!Objects.equals(userInDatabase.getState(), Constants.USER_DISABLE_STATE)) {
@@ -215,6 +232,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_ADMIN)) {
             throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对管理员进行操作");
         }
+        // 如果是项目经理，还不能对项目经理角色的用户进行操作
+        if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER) && StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_MANAGER)) {
+            throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对项目经理进行操作");
+        }
         // 重置用户密码
         LambdaUpdateWrapper<User> userLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         userLambdaUpdateWrapper
@@ -230,6 +251,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public List<AdminUserExportVo> adminExportExcelList() {
+        if (!StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_ADMIN)) {
+            throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "仅管理员允许操作导出");
+        }
         List<User> usersInDatabase = userMapper.selectList(null);
         return usersInDatabase.stream().map(user -> {
             AdminUserExportVo adminUserExportVo = new AdminUserExportVo();
@@ -239,7 +263,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             adminUserExportVo.setName(user.getName());
             File avatarFile = fileMapper.selectById(user.getAvatarId());
             adminUserExportVo.setAvatar(Objects.isNull(avatarFile) ? null : avatarFile.getUrl());
-            adminUserExportVo.setRole(StringUtils.equals(user.getRole(), Constants.ROLE_ADMIN) ? "管理员" : "用户");
+            adminUserExportVo.setRole(StringUtils.equals(user.getRole(), Constants.ROLE_ADMIN) ? "管理员" : StringUtils.equals(user.getRole(), Constants.ROLE_MANAGER) ? "项目经理" : "用户");
             adminUserExportVo.setState(!Objects.equals(user.getState(), Constants.USER_DISABLE_STATE) ? "启用" : "禁用");
             adminUserExportVo.setCreateTime(user.getCreateTime());
             adminUserExportVo.setUpdateTime(user.getUpdateTime());

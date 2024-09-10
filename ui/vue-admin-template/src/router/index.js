@@ -35,14 +35,14 @@ export const constantRoutes = [
     path: '/login',
     component: () => import('@/views/login/index'),
     hidden: true,
-    role: ['admin', 'user']
+    role: ['admin', 'manager', 'user']
   },
 
   {
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true,
-    role: ['admin', 'user']
+    role: ['admin', 'manager', 'user']
   },
 
   {
@@ -57,7 +57,7 @@ export const constantRoutes = [
         meta: { title: '首页', icon: 'dashboard' }
       }
     ],
-    role: ['admin', 'user']
+    role: ['admin', 'manager', 'user']
   },
   {
     path: '/user',
@@ -107,7 +107,7 @@ export const constantRoutes = [
         meta: { title: '项目地址', icon: 'link' }
       }
     ],
-    role: ['admin', 'user']
+    role: ['admin', 'manager', 'user']
   },
 
   // 404 page must be placed at the end !!!
@@ -115,7 +115,7 @@ export const constantRoutes = [
     path: '*',
     redirect: '/404',
     hidden: true,
-    role: ['admin', 'user']
+    role: ['admin', 'manager', 'user']
   }
 ]
 

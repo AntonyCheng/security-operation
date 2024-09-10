@@ -39,12 +39,6 @@ public class FieldMetaObjectHandler implements MetaObjectHandler {
     public static final String STATE = "state";
 
     /**
-     * todo 如果有自己的一套鉴权系统，请去掉这个自动填充项
-     * 需要处理的字段名——role
-     */
-    public static final String ROLE = "role";
-
-    /**
      * 插入时自动填充的字段
      */
     @Override
@@ -63,10 +57,6 @@ public class FieldMetaObjectHandler implements MetaObjectHandler {
 
         if (metaObject.hasSetter(STATE)) {
             metaObject.setValue(STATE, 0);
-        }
-
-        if (metaObject.hasSetter(ROLE)) {
-            metaObject.setValue(ROLE, Constants.ROLE_USER);
         }
     }
 

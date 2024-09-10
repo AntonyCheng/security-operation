@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.sharehome.securityoperation.mapper.TaskMapper">
+
+    <resultMap id="BaseResultMap" type="top.sharehome.securityoperation.model.entity.Task">
+        <id column="task_id" jdbcType="BIGINT" property="id"/>
+        <result column="task_project_id" jdbcType="BIGINT" property="projectId"/>
+        <result column="task_name" jdbcType="VARCHAR" property="name"/>
+        <result column="task_description" jdbcType="VARCHAR" property="description"/>
+        <result column="task_state" jdbcType="TINYINT" property="state"/>
+        <result column="task_user_id" jdbcType="BIGINT" property="userId"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="del_flag" jdbcType="TINYINT" property="delFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        task_id,
+        task_project_id,
+        task_name,
+        task_description,
+        task_state,
+        task_user_id,
+        create_time,
+        update_time,
+        del_flag
+    </sql>
+</mapper>

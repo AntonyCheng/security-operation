@@ -88,6 +88,11 @@ public interface Constants {
     String ROLE_ADMIN = "admin";
 
     /**
+     * 用户角色manager
+     */
+    String ROLE_MANAGER = "manager";
+
+    /**
      * 用户角色user
      */
     String ROLE_USER = "user";

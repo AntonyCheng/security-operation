@@ -2,6 +2,7 @@ package top.sharehome.securityoperation.controller.user;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +31,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/user")
 @SaCheckLogin
-@SaCheckRole(value = {Constants.ROLE_ADMIN})
+@SaCheckRole(value = {Constants.ROLE_ADMIN, Constants.ROLE_MANAGER}, mode = SaMode.OR)
 public class AdminUserController {
 
     @Resource

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.sharehome.securityoperation.mapper.FeedbackMapper">
+
+    <resultMap id="BaseResultMap" type="top.sharehome.securityoperation.model.entity.Feedback">
+        <id column="feedback_id" jdbcType="BIGINT" property="id"/>
+        <result column="feedback_task_id" jdbcType="BIGINT" property="taskId"/>
+        <result column="feedback_user_id" jdbcType="BIGINT" property="userId"/>
+        <result column="feedback_content" jdbcType="VARCHAR" property="content"/>
+        <result column="feedback_url" jdbcType="VARCHAR" property="url"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="del_flag" jdbcType="TINYINT" property="delFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        feedback_id,
+        feedback_task_id,
+        feedback_user_id,
+        feedback_content,
+        feedback_url,
+        create_time,
+        update_time,
+        del_flag
+    </sql>
+</mapper>

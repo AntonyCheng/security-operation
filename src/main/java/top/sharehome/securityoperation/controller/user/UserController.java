@@ -34,7 +34,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @SaCheckLogin
-@SaCheckRole(value = {Constants.ROLE_ADMIN, Constants.ROLE_USER}, mode = SaMode.OR)
+@SaCheckRole(value = {Constants.ROLE_ADMIN, Constants.ROLE_USER, Constants.ROLE_MANAGER}, mode = SaMode.OR)
 public class UserController {
 
     /**
