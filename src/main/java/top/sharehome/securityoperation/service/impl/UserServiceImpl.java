@@ -26,9 +26,11 @@ import top.sharehome.securityoperation.model.vo.auth.AuthLoginVo;
 import top.sharehome.securityoperation.model.vo.user.AdminUserExportVo;
 import top.sharehome.securityoperation.model.vo.user.AdminUserPageVo;
 import top.sharehome.securityoperation.service.UserService;
+import top.sharehome.securityoperation.utils.document.excel.ExcelUtils;
 import top.sharehome.securityoperation.utils.oss.minio.MinioUtils;
 import top.sharehome.securityoperation.utils.satoken.LoginUtils;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -103,7 +105,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .eq(User::getWorkId, adminUserAddDto.getWorkId());
         // 禁止添加已存在同名账号
         if (userMapper.exists(userLambdaQueryWrapper)) {
-            throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "账号或工号重复");
+            throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "账号或工号已经存在");
         }
         // 插入数据库
         User user = new User()
@@ -178,7 +180,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 })
                 .ne(User::getId, adminUserUpdateInfoDto.getId());
         if (userMapper.exists(userLambdaQueryWrapper)) {
-            throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "账号或工号重复");
+            throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "账号或工号已经存在");
         }
         // 数据只有发生更新之后才可以进行数据库操作
         if (Objects.equals(adminUserUpdateInfoDto.getWorkId(), userInDatabase.getWorkId())
@@ -368,5 +370,71 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             MinioUtils.delete(loginUser.getAvatarId());
         }
         LoginUtils.syncLoginUser();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void adminImportExcelList(MultipartFile file) {
+        try {
+            List<AdminUserImportDto> users = ExcelUtils.importStreamSyncAndClose(file.getInputStream(), AdminUserImportDto.class);
+            String role = LoginUtils.getLoginUser().getRole();
+            List<User> list = users.stream().map(user -> {
+                if (StringUtils.isBlank(user.getWorkId())) {
+                    throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在工号不完整");
+                }
+                if (!user.getWorkId().matches("\\d{7}")) {
+                    throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在工号格式错误，要求7位数字");
+                }
+                if (StringUtils.isBlank(user.getAccount())) {
+                    throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在账号不完整");
+                }
+                if (!user.getAccount().matches("^[A-Za-z0-9]{2,16}$")) {
+                    throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在账号格式错误，要求介于2-16位且不包含特殊字符");
+                }
+                if (StringUtils.isBlank(user.getEmail())) {
+                    throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在邮箱不完整");
+                }
+                if (!user.getEmail().matches("^[\\w-.]+@[\\w-.]+\\.[a-zA-Z]+$")) {
+                    throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在邮箱格式错误");
+                }
+                if (StringUtils.isBlank(user.getName())) {
+                    throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在名称不完整");
+                }
+                if (!user.getName().matches("^.{1,16}$")) {
+                    throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在名称格式错误，要求介于1-16位");
+                }
+                LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                userLambdaQueryWrapper
+                        .eq(User::getWorkId, user.getWorkId())
+                        .or()
+                        .eq(User::getAccount, user.getAccount());
+                if (userMapper.exists(userLambdaQueryWrapper)) {
+                    throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "账号或工号已经存在[账号：" + user.getAccount() + " 工号：" + user.getWorkId() + "]");
+                }
+                if (StringUtils.equals(role, Constants.ROLE_ADMIN)) {
+                    return new User()
+                            .setWorkId(user.getWorkId())
+                            .setAccount(user.getAccount())
+                            .setPassword(user.getWorkId())
+                            .setEmail(user.getEmail())
+                            .setName(user.getName())
+                            .setRole(Constants.ROLE_MANAGER);
+                } else {
+                    return new User()
+                            .setWorkId(user.getWorkId())
+                            .setAccount(user.getAccount())
+                            .setPassword(user.getWorkId())
+                            .setEmail(user.getEmail())
+                            .setName(user.getName())
+                            .setRole(Constants.ROLE_USER);
+                }
+            }).distinct().toList();
+            if (!Objects.equals(users.size(), list.size())) {
+                throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "存在" + (users.size() - list.size()) + "条重复数据");
+            }
+            userMapper.insert(list, 200);
+        } catch (IOException e) {
+            throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "读取用户信息文件出错");
+        }
     }
 }

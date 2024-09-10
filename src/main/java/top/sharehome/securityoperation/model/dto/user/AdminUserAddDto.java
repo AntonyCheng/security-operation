@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import top.sharehome.securityoperation.common.validate.PostGroup;
 import top.sharehome.securityoperation.common.validate.PutGroup;
+import top.sharehome.securityoperation.config.encrypt.annotation.RSAEncrypt;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -49,6 +50,7 @@ public class AdminUserAddDto implements Serializable {
      */
     @Size(min = 5, max = 16, message = "密码长度介于5-16位之间", groups = {PostGroup.class})
     @NotBlank(message = "密码不能为空", groups = {PostGroup.class})
+    @RSAEncrypt
     private String password;
 
     /**

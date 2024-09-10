@@ -16,6 +16,7 @@ import top.sharehome.securityoperation.common.base.Constants;
 import top.sharehome.securityoperation.common.base.R;
 import top.sharehome.securityoperation.common.base.ReturnCode;
 import top.sharehome.securityoperation.common.validate.PutGroup;
+import top.sharehome.securityoperation.config.encrypt.annotation.RSADecrypt;
 import top.sharehome.securityoperation.config.log.annotation.ControllerLog;
 import top.sharehome.securityoperation.config.log.enums.Operator;
 import top.sharehome.securityoperation.exception.customize.CustomizeReturnException;
@@ -112,6 +113,7 @@ public class UserController {
      */
     @PutMapping("/update/password")
     @ControllerLog(description = "用户更新自身密码", operator = Operator.UPDATE)
+    @RSADecrypt
     public R<String> updatePassword(@RequestBody @Validated({PutGroup.class}) UserUpdatePasswordDto userUpdatePasswordDto) {
         if (!StringUtils.equals(userUpdatePasswordDto.getNewPassword(), userUpdatePasswordDto.getCheckNewPassword())) {
             throw new CustomizeReturnException(ReturnCode.PASSWORD_AND_SECONDARY_PASSWORD_NOT_SAME);

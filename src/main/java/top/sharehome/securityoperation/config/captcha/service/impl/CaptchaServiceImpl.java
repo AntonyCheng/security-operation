@@ -83,7 +83,7 @@ public class CaptchaServiceImpl implements CaptchaService {
             throw new CustomizeReturnException(ReturnCode.CAPTCHA_HAS_EXPIRED);
         }
         CacheUtils.deleteNoPrefix(codeKeyInRedis);
-        if (!StringUtils.equals(code, codeValue)) {
+        if (!StringUtils.equals(code.toLowerCase(), codeValue.toLowerCase())) {
             throw new CustomizeReturnException(ReturnCode.CAPTCHA_IS_INCORRECT);
         }
     }

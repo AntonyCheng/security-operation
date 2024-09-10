@@ -146,7 +146,7 @@
           width="150"
         >
           <template #default="scope">
-            <el-dropdown @command="(data)=>void openUpdateDialog(data,scope.row)">
+            <el-dropdown v-if="!(role === 'manager' && (scope.row.role === 'admin' || scope.row.role === 'manager')) && scope.row.role !== 'admin'" @command="(data)=>void openUpdateDialog(data,scope.row)">
               <el-button type="primary" size="mini">
                 修改
               </el-button>
@@ -155,8 +155,8 @@
                 <el-dropdown-item command="password">密码</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
-            <el-divider direction="vertical" />
-            <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+            <el-divider v-if="!(role === 'manager' && (scope.row.role === 'admin' || scope.row.role === 'manager')) && scope.row.role !== 'admin'" direction="vertical" />
+            <el-button v-if="!(role === 'manager' && (scope.row.role === 'admin' || scope.row.role === 'manager')) && scope.row.role !== 'admin'" type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -318,6 +318,8 @@
 import { mapGetters } from 'vuex'
 import { adminAddUser, adminDeleteUser, adminExportExcel, adminPageUser, adminResetPassword, adminUpdateInfo, adminUpdateState } from '@/api/user'
 import { Loading, Message } from 'element-ui'
+import { getRsaKey } from '@/api/encrypt'
+import { JSEncrypt } from 'jsencrypt'
 
 export default {
   name: 'UserManage',
@@ -386,7 +388,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'role'
+      'role',
+      'id'
     ])
   },
   created() {
@@ -475,13 +478,16 @@ export default {
       this.addDialogVisible = true
     },
     handleAdd() {
-      this.$refs['addForm'].validate(valid => {
+      this.$refs['addForm'].validate(async valid => {
         if (valid) {
           this.addLoading = true
+          const encryptor = new JSEncrypt()
+          const encryptKey = await this.getEncryptKey()
+          encryptor.setPublicKey(encryptKey)
           const data = {
             workId: this.addForm.workId,
             account: this.addForm.account,
-            password: this.addForm.password,
+            password: encryptor.encrypt(this.addForm.password),
             name: this.addForm.name,
             email: this.addForm.email
           }
@@ -518,7 +524,7 @@ export default {
       this.updateDialogVisible = true
     },
     handleUpdate() {
-      this.$refs['updateForm'].validate(valid => {
+      this.$refs['updateForm'].validate(async valid => {
         if (valid) {
           this.updateLoading = true
           if (this.updateType === 'info') {
@@ -542,9 +548,12 @@ export default {
               this.updateLoading = false
             })
           } else {
+            const encryptor = new JSEncrypt()
+            const encryptKey = await this.getEncryptKey()
+            encryptor.setPublicKey(encryptKey)
             const data = {
               id: this.updateForm.id,
-              newPassword: this.updateForm.newPassword
+              newPassword: encryptor.encrypt(this.updateForm.newPassword)
             }
             adminResetPassword(data).then(response => {
               this.pageLoading = true
@@ -561,6 +570,10 @@ export default {
           }
         }
       })
+    },
+    async getEncryptKey() {
+      const response = await getRsaKey()
+      return response.msg
     },
     handleCancelUpdate() {
       this.$refs['updateForm'].resetFields()

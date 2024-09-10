@@ -247,6 +247,8 @@
 import { mapGetters } from 'vuex'
 import { updateAccount, updateAvatar, updateEmail, updateName, updatePassword } from '@/api/user'
 import { Message } from 'element-ui'
+import { getRsaKey } from '@/api/encrypt'
+import { JSEncrypt } from 'jsencrypt'
 
 export default {
   name: 'Dashboard',
@@ -337,12 +339,15 @@ export default {
           break
         }
         case 'password': {
-          this.$refs['updatePasswordForm'].validate(valid => {
+          this.$refs['updatePasswordForm'].validate(async valid => {
             if (valid) {
+              const encryptor = new JSEncrypt()
+              const encryptKey = await this.getEncryptKey()
+              encryptor.setPublicKey(encryptKey)
               const data = {
-                oldPassword: this.updatePasswordForm.oldPassword,
-                newPassword: this.updatePasswordForm.newPassword,
-                checkNewPassword: this.updatePasswordForm.checkNewPassword
+                oldPassword: encryptor.encrypt(this.updatePasswordForm.oldPassword),
+                newPassword: encryptor.encrypt(this.updatePasswordForm.newPassword),
+                checkNewPassword: encryptor.encrypt(this.updatePasswordForm.checkNewPassword)
               }
               updatePassword(data).then(response => {
                 this.resetUpdateForm()
@@ -389,6 +394,10 @@ export default {
           break
         }
       }
+    },
+    async getEncryptKey() {
+      const response = await getRsaKey()
+      return response.msg
     },
     handleCancel() {
       if (this.dialogType === 'account') {

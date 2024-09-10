@@ -107,4 +107,10 @@ public interface UserService extends IService<User> {
      */
     void updateAvatar(MultipartFile file);
 
+    /**
+     * 管理员/项目经理导入普通用户
+     *
+     * @param file 用户信息表文件
+     */
+    void adminImportExcelList(MultipartFile file);
 }

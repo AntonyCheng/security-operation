@@ -16,6 +16,7 @@ import top.sharehome.securityoperation.common.base.R;
 import top.sharehome.securityoperation.common.base.ReturnCode;
 import top.sharehome.securityoperation.common.validate.PostGroup;
 import top.sharehome.securityoperation.common.validate.PutGroup;
+import top.sharehome.securityoperation.config.encrypt.annotation.RSADecrypt;
 import top.sharehome.securityoperation.config.log.annotation.ControllerLog;
 import top.sharehome.securityoperation.config.log.enums.Operator;
 import top.sharehome.securityoperation.exception.customize.CustomizeReturnException;
@@ -81,6 +82,7 @@ public class AdminUserController {
      */
     @PostMapping("/add")
     @ControllerLog(description = "管理员/项目经理添加用户信息", operator = Operator.INSERT)
+    @RSADecrypt
     public R<String> addUser(@RequestBody @Validated({PostGroup.class}) AdminUserAddDto adminUserAddDto) {
         userService.adminAddUser(adminUserAddDto);
         return R.ok("添加成功");
@@ -133,6 +135,7 @@ public class AdminUserController {
      */
     @PutMapping("/reset/password")
     @ControllerLog(description = "管理员/项目经理重置用户密码", operator = Operator.UPDATE)
+    @RSADecrypt
     public R<String> resetPassword(@RequestBody @Validated({PutGroup.class}) AdminUserResetPasswordDto adminUserResetPasswordDto) {
         userService.adminResetPassword(adminUserResetPasswordDto);
         return R.ok("重置密码成功");
@@ -152,15 +155,27 @@ public class AdminUserController {
     }
 
     /**
+     * 导出用户表格模板
+     *
+     * @param response 响应
+     */
+    @GetMapping("/template")
+    @ControllerLog(description = "管理员/项目经理导出用户表格模板", operator = Operator.EXPORT)
+    public R<Void> exportUserTemplate(HttpServletResponse response) {
+        ExcelUtils.exportTemplateHttpServletResponse("用户信息导入模板", AdminUserImportDto.class, response);
+        return R.empty();
+    }
+
+    /**
      * 导入用户表格
      *
-     * @param adminUserImportDto 管理员添加项目经理/项目经理添加用户Dto类
+     * @param adminUserInfoDto 管理员添加项目经理/项目经理添加用户Dto类
      * @return 返回导入结果
      */
     @PostMapping("/import")
     @ControllerLog(description = "管理员/项目经理导入用户表格", operator = Operator.IMPORT)
-    public R<String> importUser(@Validated({PostGroup.class}) AdminUserImportDto adminUserImportDto) {
-        MultipartFile file = adminUserImportDto.getFile();
+    public R<String> importUser(@Validated({PostGroup.class}) AdminUserInfoDto adminUserInfoDto) {
+        MultipartFile file = adminUserInfoDto.getFile();
         if (file.getSize() == 0 || file.getSize() > USER_INFO_MAX_SIZE) {
             throw new CustomizeReturnException(ReturnCode.USER_UPLOADED_FILE_IS_TOO_LARGE, "用户信息表不得大于20MB");
         }
@@ -169,8 +184,8 @@ public class AdminUserController {
         if (!USER_INFO_SUFFIX_LIST.contains(suffix)) {
             throw new CustomizeReturnException(ReturnCode.USER_UPLOADED_FILE_TYPE_MISMATCH, "用户信息表仅支持xls和xlsx格式");
         }
-//        userService.adminImportExcelList(file);
-        return R.ok(StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_ADMIN) ? "导入项目经理信息成功" : "导入普通用户信息成功");
+        userService.adminImportExcelList(file);
+        return R.ok((StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_ADMIN) ? "导入项目经理信息成功" : "导入普通用户信息成功") + "，默认密码和工号一致");
     }
 
 }

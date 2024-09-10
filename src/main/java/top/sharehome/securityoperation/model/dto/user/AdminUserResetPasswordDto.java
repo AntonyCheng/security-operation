@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import top.sharehome.securityoperation.common.validate.PutGroup;
+import top.sharehome.securityoperation.config.encrypt.annotation.RSAEncrypt;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -32,6 +33,7 @@ public class AdminUserResetPasswordDto implements Serializable {
      */
     @Size(min = 5, max = 16, message = "密码长度介于5-16位之间", groups = {PutGroup.class})
     @NotBlank(message = "新密码密码不能为空", groups = {PutGroup.class})
+    @RSAEncrypt
     private String newPassword;
 
     @Serial
