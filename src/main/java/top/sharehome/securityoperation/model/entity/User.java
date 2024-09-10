@@ -29,6 +29,12 @@ public class User implements Serializable {
     private Long id;
 
     /**
+     * 工号
+     */
+    @TableField(value = "user_work_id")
+    private String workId;
+
+    /**
      * 账号
      */
     @TableField(value = "user_account")

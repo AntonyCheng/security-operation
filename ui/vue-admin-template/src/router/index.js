@@ -70,7 +70,7 @@ export const constantRoutes = [
         meta: { title: '用户管理', icon: 'table' }
       }
     ],
-    role: ['admin']
+    role: ['admin', 'manager']
   },
   {
     path: '/log',

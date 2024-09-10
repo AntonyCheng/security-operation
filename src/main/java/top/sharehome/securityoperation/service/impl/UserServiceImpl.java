@@ -60,6 +60,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
         // 构造查询条件
         userLambdaQueryWrapper
+                .eq(StringUtils.isNotBlank(adminUserPageDto.getWorkId()), User::getWorkId, adminUserPageDto.getWorkId())
                 .eq(StringUtils.isNotBlank(adminUserPageDto.getRole()), User::getRole, adminUserPageDto.getRole())
                 .eq(Objects.nonNull(adminUserPageDto.getState()), User::getState, adminUserPageDto.getState())
                 .like(StringUtils.isNotBlank(adminUserPageDto.getAccount()), User::getAccount, adminUserPageDto.getAccount())
@@ -76,6 +77,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             File avatarFile = fileMapper.selectById(user.getAvatarId());
             return new AdminUserPageVo()
                     .setId(user.getId())
+                    .setWorkId(user.getWorkId())
                     .setAccount(user.getAccount())
                     .setName(user.getName())
                     .setEmail(user.getEmail())
@@ -95,13 +97,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional(rollbackFor = Exception.class)
     public void adminAddUser(AdminUserAddDto adminUserAddDto) {
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userLambdaQueryWrapper.eq(User::getAccount, adminUserAddDto.getAccount());
+        userLambdaQueryWrapper
+                .eq(User::getAccount, adminUserAddDto.getAccount())
+                .or()
+                .eq(User::getWorkId, adminUserAddDto.getWorkId());
         // 禁止添加已存在同名账号
         if (userMapper.exists(userLambdaQueryWrapper)) {
-            throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS);
+            throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "账号或工号重复");
         }
         // 插入数据库
         User user = new User()
+                .setWorkId(adminUserAddDto.getWorkId())
                 .setAccount(adminUserAddDto.getAccount())
                 .setPassword(adminUserAddDto.getPassword())
                 .setEmail(adminUserAddDto.getEmail())
@@ -163,19 +169,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 禁止添加非自身的已存在同名账号
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userLambdaQueryWrapper.eq(User::getAccount, adminUserUpdateInfoDto.getAccount());
-        userLambdaQueryWrapper.ne(User::getId, adminUserUpdateInfoDto.getId());
+        userLambdaQueryWrapper
+                .and(queryWrapper -> {
+                    queryWrapper
+                            .eq(User::getAccount, adminUserUpdateInfoDto.getAccount())
+                            .or()
+                            .eq(User::getWorkId, adminUserUpdateInfoDto.getWorkId());
+                })
+                .ne(User::getId, adminUserUpdateInfoDto.getId());
         if (userMapper.exists(userLambdaQueryWrapper)) {
-            throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS);
+            throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "账号或工号重复");
         }
         // 数据只有发生更新之后才可以进行数据库操作
-        if (Objects.equals(adminUserUpdateInfoDto.getAccount(), userInDatabase.getAccount())
+        if (Objects.equals(adminUserUpdateInfoDto.getWorkId(), userInDatabase.getWorkId())
+                && Objects.equals(adminUserUpdateInfoDto.getAccount(), userInDatabase.getAccount())
                 && Objects.equals(adminUserUpdateInfoDto.getName(), userInDatabase.getName())
                 && Objects.equals(adminUserUpdateInfoDto.getEmail(), userInDatabase.getEmail())) {
             throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "信息未发生更改");
         }
         User user = new User()
                 .setId(adminUserUpdateInfoDto.getId())
+                .setWorkId(adminUserUpdateInfoDto.getWorkId())
                 .setAccount(adminUserUpdateInfoDto.getAccount())
                 .setEmail(adminUserUpdateInfoDto.getEmail())
                 .setName(adminUserUpdateInfoDto.getName());
@@ -258,6 +272,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return usersInDatabase.stream().map(user -> {
             AdminUserExportVo adminUserExportVo = new AdminUserExportVo();
             adminUserExportVo.setId(user.getId());
+            adminUserExportVo.setWorkId(user.getWorkId());
             adminUserExportVo.setAccount(user.getAccount());
             adminUserExportVo.setEmail(user.getEmail());
             adminUserExportVo.setName(user.getName());

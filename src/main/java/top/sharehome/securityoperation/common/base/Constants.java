@@ -103,6 +103,16 @@ public interface Constants {
     String REGEX_NUMBER_AND_LETTER = "^[0-9a-zA-Z]+$";
 
     /**
+     * 只包含数字的正则表达式
+     */
+    String REGEX_NUMBER = "^[0-9]+$";
+
+    /**
+     * 只包含英文的正则表达式
+     */
+    String REGEX_LETTER = "^[a-zA-Z]+$";
+
+    /**
      * 邮箱的正则表达式
      */
     String REGEX_MAIL = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";

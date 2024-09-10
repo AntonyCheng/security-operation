@@ -45,7 +45,7 @@ public class UserController {
     /**
      * 头像文件后缀集合
      */
-    private static final List<String> AVATAR_SUFFIX_LIST = new ArrayList<String>() {
+    private static final List<String> AVATAR_SUFFIX_LIST = new ArrayList<>() {
         {
             add("png");
             add("jpg");

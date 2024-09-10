@@ -26,6 +26,11 @@ public class AdminUserPageVo implements Serializable {
     private Long id;
 
     /**
+     * 用户工号
+     */
+    private String workId;
+
+    /**
      * 用户账号
      */
     private String account;

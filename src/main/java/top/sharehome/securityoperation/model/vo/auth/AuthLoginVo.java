@@ -25,6 +25,11 @@ public class AuthLoginVo implements Serializable {
     private Long id;
 
     /**
+     * 工号
+     */
+    private String workId;
+
+    /**
      * 账号
      */
     private String account;

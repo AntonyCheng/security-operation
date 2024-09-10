@@ -20,6 +20,11 @@ import java.io.Serializable;
 public class AdminUserPageDto implements Serializable {
 
     /**
+     * 用户工号（eq）
+     */
+    private String workId;
+
+    /**
      * 用户账号（like）
      */
     private String account;

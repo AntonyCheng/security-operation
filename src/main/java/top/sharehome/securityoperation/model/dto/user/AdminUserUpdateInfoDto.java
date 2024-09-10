@@ -11,6 +11,7 @@ import top.sharehome.securityoperation.common.validate.PutGroup;
 import java.io.Serial;
 import java.io.Serializable;
 
+import static top.sharehome.securityoperation.common.base.Constants.REGEX_NUMBER;
 import static top.sharehome.securityoperation.common.base.Constants.REGEX_NUMBER_AND_LETTER;
 
 /**
@@ -29,6 +30,14 @@ public class AdminUserUpdateInfoDto implements Serializable {
      */
     @NotNull(message = "ID不能为空", groups = {PutGroup.class})
     private Long id;
+
+    /**
+     * 工号
+     */
+    @Size(min = 7, max = 7, message = "工号长度为7位", groups = {PutGroup.class})
+    @NotBlank(message = "工号不能为空", groups = {PutGroup.class})
+    @Pattern(regexp = REGEX_NUMBER, message = "工号仅由数字构成", groups = {PutGroup.class})
+    private String workId;
 
     /**
      * 账号

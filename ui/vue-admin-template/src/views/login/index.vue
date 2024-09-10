@@ -63,7 +63,7 @@
         >
           <template slot="append">
             <span class="code-container">
-              <img alt="captcha.imgBase64" :src="imgBase64" @click="getCaptchaBase64">
+              <img alt="captcha.imgBase64" :src="imgBase64" onerror="" @click="getCaptchaBase64">
             </span>
           </template>
         </el-input>

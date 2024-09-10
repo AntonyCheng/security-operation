@@ -17,6 +17,9 @@
                     size="small"
                     label-width="80px"
                   >
+                    <el-form-item label="工号">
+                      <el-input v-model="queryForm.workId" placeholder="请输入工号" style="width: 200px" />
+                    </el-form-item>
                     <el-form-item label="账号">
                       <el-input v-model="queryForm.account" placeholder="请输入账号" style="width: 200px" />
                     </el-form-item>
@@ -66,10 +69,10 @@
           </template>
           <template>
             <template>
-              <el-button type="primary" size="small" style="width: 100px" @click="openAddDialog">添加用户</el-button>
+              <el-button type="primary" size="small" style="width: 100px" @click="openAddDialog">添加{{ role==='admin'?'项目经理':'普通用户' }}</el-button>
             </template>
             <template>
-              <el-button type="success" size="small" style="width: 100px" @click="handleExport">导出用户信息</el-button>
+              <el-button v-if="role === 'admin'" type="success" size="small" style="width: 100px" @click="handleExport">导出用户信息</el-button>
             </template>
           </template>
         </el-collapse-item>
@@ -83,8 +86,13 @@
         style="width: 100%"
       >
         <el-table-column
+          v-if="false"
           prop="id"
           label="ID"
+        />
+        <el-table-column
+          prop="workId"
+          label="工号"
         />
         <el-table-column
           prop="account"
@@ -112,7 +120,7 @@
           label="角色"
         >
           <template v-slot="scope">
-            {{ scope.row.role === 'admin' ? '管理员' : '用户' }}
+            {{ scope.row.role === 'admin' ? '管理员' : scope.row.role === 'manager'? '项目经理' : '用户' }}
           </template>
         </el-table-column>
         <el-table-column
@@ -169,6 +177,16 @@
       <el-dialog :show-close="false" title="添加用户" :visible.sync="addDialogVisible" @close="handleCancelAdd">
         <el-form ref="addForm" :model="addForm" label-width="80px">
           <el-form-item
+            label="用户工号"
+            prop="workId"
+            :rules="[
+              {required:true,message:'工号不能为空',trigger: 'blur'},
+              {min:7,max:7,message: '工号为7位数字',trigger: 'blur'}
+            ]"
+          >
+            <el-input v-model="addForm.workId" autocomplete="off" placeholder="请输入用户工号" />
+          </el-form-item>
+          <el-form-item
             label="用户账号"
             prop="account"
             :rules="[
@@ -176,7 +194,7 @@
               {min:2,max:16,message: '账号长度介于2-16位之间',trigger: 'blur'}
             ]"
           >
-            <el-input v-model="addForm.account" autocomplete="off" />
+            <el-input v-model="addForm.account" autocomplete="off" placeholder="请输入用户账号" />
           </el-form-item>
           <el-form-item
             label="用户密码"
@@ -186,7 +204,10 @@
               {min:5,max:16,message: '密码长度介于5-16位之间',trigger: 'blur'}
             ]"
           >
-            <el-input v-model="addForm.password" autocomplete="off" />
+            <el-input ref="password" v-model="addForm.password" name="password" :type="passwordType" placeholder="请输入用户密码" auto-complete="off" />
+            <span class="show-pwd" @click="showPwd">
+              <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+            </span>
           </el-form-item>
           <el-form-item
             label="用户名称"
@@ -196,7 +217,7 @@
               {min:1,max:16,message: '名称长度介于1-16位之间',trigger: 'blur'}
             ]"
           >
-            <el-input v-model="addForm.name" autocomplete="off" />
+            <el-input v-model="addForm.name" autocomplete="off" placeholder="请输入用户名称" />
           </el-form-item>
           <el-form-item
             label="用户邮箱"
@@ -205,7 +226,7 @@
               {required:true,message:'邮箱不能为空',trigger: 'blur'},
             ]"
           >
-            <el-input v-model="addForm.email" autocomplete="off" />
+            <el-input v-model="addForm.email" autocomplete="off" placeholder="请输入用户邮箱" />
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -224,6 +245,16 @@
             <el-input v-model="updateForm.id" disabled />
           </el-form-item>
           <el-form-item
+            label="用户工号"
+            prop="workId"
+            :rules="[
+              {required:true,message:'工号不能为空',trigger: 'blur'},
+              {min:7,max:7,message: '工号为7位数字',trigger: 'blur'}
+            ]"
+          >
+            <el-input v-model="updateForm.workId" autocomplete="off" placeholder="请输入用户工号" />
+          </el-form-item>
+          <el-form-item
             label="用户账号"
             prop="account"
             :rules="[
@@ -231,7 +262,7 @@
               {min:2,max:16,message: '新账号长度介于2-16位之间',trigger: 'blur'}
             ]"
           >
-            <el-input v-model="updateForm.account" autocomplete="off" />
+            <el-input v-model="updateForm.account" autocomplete="off" placeholder="请输入用户账号" />
           </el-form-item>
           <el-form-item
             label="用户名称"
@@ -241,7 +272,7 @@
               {min:1,max:16,message: '新名称长度介于1-16位之间',trigger: 'blur'}
             ]"
           >
-            <el-input v-model="updateForm.name" autocomplete="off" />
+            <el-input v-model="updateForm.name" autocomplete="off" placeholder="请输入用户名称" />
           </el-form-item>
           <el-form-item
             label="用户邮箱"
@@ -250,7 +281,7 @@
               {required:true,message:'新邮箱不能为空',trigger: 'blur'},
             ]"
           >
-            <el-input v-model="updateForm.email" autocomplete="off" />
+            <el-input v-model="updateForm.email" autocomplete="off" placeholder="请输入用户邮箱" />
           </el-form-item>
         </el-form>
         <el-form v-else ref="updateForm" :model="updateForm" label-width="80px">
@@ -268,7 +299,10 @@
               {min:5,max:16,message: '新密码长度介于5-16位之间',trigger: 'blur'}
             ]"
           >
-            <el-input v-model="updateForm.newPassword" autocomplete="off" />
+            <el-input ref="password" v-model="updateForm.newPassword" name="password" :type="passwordType" placeholder="请输入用户新密码" auto-complete="off" />
+            <span class="show-pwd" @click="showPwd">
+              <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+            </span>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -295,6 +329,7 @@ export default {
       pageLoading: false,
       queryResult: [],
       queryForm: {
+        workId: undefined,
         account: undefined,
         name: undefined,
         email: undefined,
@@ -306,12 +341,16 @@ export default {
       },
       roleMapping: [
         {
-          label: '用户',
-          value: 'user'
-        },
-        {
           label: '管理员',
           value: 'admin'
+        },
+        {
+          label: '项目经理',
+          value: 'manager'
+        },
+        {
+          label: '用户',
+          value: 'user'
         }
       ],
       stateMapping: [
@@ -326,6 +365,7 @@ export default {
       ],
       addDialogVisible: false,
       addForm: {
+        workId: undefined,
         account: undefined,
         password: undefined,
         name: undefined,
@@ -335,11 +375,13 @@ export default {
       updateType: undefined,
       updateForm: {
         id: undefined,
+        workId: undefined,
         account: undefined,
         name: undefined,
         email: undefined,
         newPassword: undefined
-      }
+      },
+      passwordType: 'password'
     }
   },
   computed: {
@@ -355,8 +397,19 @@ export default {
     })
   },
   methods: {
+    showPwd() {
+      if (this.passwordType === 'password') {
+        this.passwordType = ''
+      } else {
+        this.passwordType = 'password'
+      }
+      this.$nextTick(() => {
+        this.$refs.password.focus()
+      })
+    },
     handleQuery() {
       if (
+        this.queryForm.workId === undefined &&
         this.queryForm.account === undefined &&
         this.queryForm.state === undefined &&
         this.queryForm.name === undefined &&
@@ -376,6 +429,7 @@ export default {
     },
     handleReset() {
       if (
+        this.queryForm.workId === undefined &&
         this.queryForm.account === undefined &&
         this.queryForm.state === undefined &&
         this.queryForm.name === undefined &&
@@ -425,6 +479,7 @@ export default {
         if (valid) {
           this.addLoading = true
           const data = {
+            workId: this.addForm.workId,
             account: this.addForm.account,
             password: this.addForm.password,
             name: this.addForm.name,
@@ -456,6 +511,7 @@ export default {
     openUpdateDialog(data1, data2) {
       this.updateType = data1
       this.updateForm.id = data2.id
+      this.updateForm.workId = data2.workId
       this.updateForm.account = data2.account
       this.updateForm.name = data2.name
       this.updateForm.email = data2.email
@@ -468,6 +524,7 @@ export default {
           if (this.updateType === 'info') {
             const data = {
               id: this.updateForm.id,
+              workId: this.updateForm.workId,
               account: this.updateForm.account,
               name: this.updateForm.name,
               email: this.updateForm.email
@@ -560,6 +617,7 @@ export default {
       })
     },
     async resetQueryForm() {
+      this.queryForm.workId = undefined
       this.queryForm.account = undefined
       this.queryForm.name = undefined
       this.queryForm.email = undefined
@@ -568,6 +626,7 @@ export default {
       this.queryForm.page = 1
     },
     async resetAddForm() {
+      this.addForm.workId = undefined
       this.addForm.account = undefined
       this.addForm.password = undefined
       this.addForm.name = undefined
@@ -575,6 +634,7 @@ export default {
     },
     async resetUpdateForm() {
       this.updateForm.id = undefined
+      this.updateForm.workId = undefined
       this.updateForm.account = undefined
       this.updateForm.name = undefined
       this.updateForm.email = undefined
@@ -584,7 +644,9 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+$dark_gray: #889aa4;
+
 .user-manage {
   &-container {
     margin: 30px;
@@ -601,5 +663,15 @@ export default {
     width: 100%;
     background-size: cover;
   }
+}
+
+.show-pwd {
+  position: absolute;
+  right: 10px;
+  top: 7px;
+  font-size: 16px;
+  color: $dark_gray;
+  cursor: pointer;
+  user-select: none;
 }
 </style>

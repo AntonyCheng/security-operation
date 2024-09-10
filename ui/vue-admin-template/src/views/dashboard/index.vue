@@ -33,7 +33,7 @@
                 <template slot="title">
                   <span style="font-size: 16px"><b>详细信息</b></span>
                 </template>
-                <el-descriptions-item>
+                <el-descriptions-item v-if="false">
                   <template slot="label">
                     <i class="el-icon-info" />
                     ID
@@ -42,6 +42,19 @@
                     <el-row>
                       <el-col>
                         {{ id }}
+                      </el-col>
+                    </el-row>
+                  </template>
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    <i class="el-icon-info" />
+                    工号
+                  </template>
+                  <template>
+                    <el-row>
+                      <el-col>
+                        {{ workId }}
                       </el-col>
                     </el-row>
                   </template>
@@ -104,6 +117,7 @@
                     <el-row>
                       <el-col>
                         <el-tag v-if="role === 'admin'" size="small">管理员</el-tag>
+                        <el-tag v-else-if="role === 'manager'" size="small">项目经理</el-tag>
                         <el-tag v-else size="small">用户</el-tag>
                       </el-col>
                     </el-row>
@@ -263,6 +277,7 @@ export default {
   computed: {
     ...mapGetters([
       'id',
+      'workId',
       'account',
       'name',
       'email',

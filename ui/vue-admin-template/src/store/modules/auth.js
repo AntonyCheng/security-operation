@@ -6,6 +6,7 @@ const getDefaultState = () => {
   return {
     token: getToken(),
     id: '',
+    workId: '',
     account: '',
     name: '',
     email: '',
@@ -26,6 +27,9 @@ const mutations = {
   SET_ID: (state, id) => {
     state.id = id
   },
+  SET_WORK_ID: (state, workId) => {
+    state.workId = workId
+  },
   SET_ACCOUNT: (state, account) => {
     state.account = account
   },
@@ -45,15 +49,15 @@ const mutations = {
 
 const actions = {
   // user login
-  login({commit}, userInfo) {
-    const {account, password, captcha} = userInfo
+  login({ commit }, userInfo) {
+    const { account, password, captcha } = userInfo
     return new Promise((resolve, reject) => {
       login({
         account: account.trim(),
         password: password,
-        captcha: {code: captcha.code, uuid: captcha.uuid}
+        captcha: { code: captcha.code, uuid: captcha.uuid }
       }).then(response => {
-        const {data} = response
+        const { data } = response
         commit('SET_TOKEN', data.token)
         setToken(data.token)
         resolve()
@@ -64,18 +68,19 @@ const actions = {
   },
 
   // get user info
-  getInfo({commit, state}) {
+  getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
-        const {data} = response
+        const { data } = response
 
         if (!data) {
           return reject('验证失败，请重新登录')
         }
 
-        const {id, account, name, email, avatar, role} = data
+        const { id, workId, account, name, email, avatar, role } = data
 
         commit('SET_ID', id)
+        commit('SET_WORK_ID', workId)
         commit('SET_ACCOUNT', account)
         commit('SET_NAME', name)
         commit('SET_EMAIL', email)
@@ -89,7 +94,7 @@ const actions = {
   },
 
   // user logout
-  logout({commit, state}) {
+  logout({ commit, state }) {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
         removeToken() // must remove  token  first
@@ -103,7 +108,7 @@ const actions = {
   },
 
   // remove token
-  resetToken({commit}) {
+  resetToken({ commit }) {
     return new Promise(resolve => {
       removeToken() // must remove  token  first
       commit('RESET_STATE')

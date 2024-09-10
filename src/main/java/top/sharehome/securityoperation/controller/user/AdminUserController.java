@@ -6,21 +6,28 @@ import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import top.sharehome.securityoperation.common.base.Constants;
 import top.sharehome.securityoperation.common.base.R;
+import top.sharehome.securityoperation.common.base.ReturnCode;
 import top.sharehome.securityoperation.common.validate.PostGroup;
 import top.sharehome.securityoperation.common.validate.PutGroup;
 import top.sharehome.securityoperation.config.log.annotation.ControllerLog;
 import top.sharehome.securityoperation.config.log.enums.Operator;
+import top.sharehome.securityoperation.exception.customize.CustomizeReturnException;
 import top.sharehome.securityoperation.model.dto.user.*;
 import top.sharehome.securityoperation.model.page.PageModel;
 import top.sharehome.securityoperation.model.vo.user.AdminUserExportVo;
 import top.sharehome.securityoperation.model.vo.user.AdminUserPageVo;
 import top.sharehome.securityoperation.service.UserService;
 import top.sharehome.securityoperation.utils.document.excel.ExcelUtils;
+import top.sharehome.securityoperation.utils.satoken.LoginUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,6 +41,21 @@ import java.util.List;
 @SaCheckRole(value = {Constants.ROLE_ADMIN, Constants.ROLE_MANAGER}, mode = SaMode.OR)
 public class AdminUserController {
 
+    /**
+     * 用户信息文件最大大小
+     */
+    private static final int USER_INFO_MAX_SIZE = 20 * 1024 * 1024;
+
+    /**
+     * 用户信息文件后缀集合
+     */
+    private static final List<String> USER_INFO_SUFFIX_LIST = new ArrayList<>() {
+        {
+            add("xls");
+            add("xlsx");
+        }
+    };
+
     @Resource
     private UserService userService;
 
@@ -45,7 +67,7 @@ public class AdminUserController {
      * @return 分页查询结果
      */
     @GetMapping("/page")
-    @ControllerLog(description = "管理员查询用户信息", operator = Operator.QUERY)
+    @ControllerLog(description = "管理员/项目经理查询用户信息", operator = Operator.QUERY)
     public R<Page<AdminUserPageVo>> pageUser(AdminUserPageDto adminUserPageDto, PageModel pageModel) {
         Page<AdminUserPageVo> page = userService.adminPageUser(adminUserPageDto, pageModel);
         return R.ok(page);
@@ -58,7 +80,7 @@ public class AdminUserController {
      * @return 添加结果
      */
     @PostMapping("/add")
-    @ControllerLog(description = "管理员添加用户信息", operator = Operator.INSERT)
+    @ControllerLog(description = "管理员/项目经理添加用户信息", operator = Operator.INSERT)
     public R<String> addUser(@RequestBody @Validated({PostGroup.class}) AdminUserAddDto adminUserAddDto) {
         userService.adminAddUser(adminUserAddDto);
         return R.ok("添加成功");
@@ -71,7 +93,7 @@ public class AdminUserController {
      * @return 删除结果
      */
     @DeleteMapping("/delete/{id}")
-    @ControllerLog(description = "管理员删除用户信息", operator = Operator.DELETE)
+    @ControllerLog(description = "管理员/项目经理删除用户信息", operator = Operator.DELETE)
     public R<String> deleteUser(@PathVariable("id") Long id) {
         userService.adminDeleteUser(id);
         return R.ok("删除成功");
@@ -84,7 +106,7 @@ public class AdminUserController {
      * @return 修改结果
      */
     @PutMapping("/update/info")
-    @ControllerLog(description = "管理员修改用户信息", operator = Operator.UPDATE)
+    @ControllerLog(description = "管理员/项目经理修改用户信息", operator = Operator.UPDATE)
     public R<String> updateInfo(@RequestBody @Validated({PutGroup.class}) AdminUserUpdateInfoDto adminUserUpdateInfoDto) {
         userService.adminUpdateInfo(adminUserUpdateInfoDto);
         return R.ok("修改信息成功");
@@ -97,7 +119,7 @@ public class AdminUserController {
      * @return 修改结果
      */
     @PutMapping("/update/state")
-    @ControllerLog(description = "管理员修改用户状态", operator = Operator.UPDATE)
+    @ControllerLog(description = "管理员/项目经理修改用户状态", operator = Operator.UPDATE)
     public R<String> updateState(@RequestBody @Validated({PutGroup.class}) AdminUserUpdateStateDto adminUserUpdateStateDto) {
         userService.adminUpdateState(adminUserUpdateStateDto);
         return R.ok("修改状态成功");
@@ -110,7 +132,7 @@ public class AdminUserController {
      * @return 重置结果
      */
     @PutMapping("/reset/password")
-    @ControllerLog(description = "管理员重置用户密码", operator = Operator.UPDATE)
+    @ControllerLog(description = "管理员/项目经理重置用户密码", operator = Operator.UPDATE)
     public R<String> resetPassword(@RequestBody @Validated({PutGroup.class}) AdminUserResetPasswordDto adminUserResetPasswordDto) {
         userService.adminResetPassword(adminUserResetPasswordDto);
         return R.ok("重置密码成功");
@@ -127,6 +149,28 @@ public class AdminUserController {
         List<AdminUserExportVo> list = userService.adminExportExcelList();
         ExcelUtils.exportHttpServletResponse(list, "用户表", AdminUserExportVo.class, response);
         return R.empty();
+    }
+
+    /**
+     * 导入用户表格
+     *
+     * @param adminUserImportDto 管理员添加项目经理/项目经理添加用户Dto类
+     * @return 返回导入结果
+     */
+    @PostMapping("/import")
+    @ControllerLog(description = "管理员/项目经理导入用户表格", operator = Operator.IMPORT)
+    public R<String> importUser(@Validated({PostGroup.class}) AdminUserImportDto adminUserImportDto) {
+        MultipartFile file = adminUserImportDto.getFile();
+        if (file.getSize() == 0 || file.getSize() > USER_INFO_MAX_SIZE) {
+            throw new CustomizeReturnException(ReturnCode.USER_UPLOADED_FILE_IS_TOO_LARGE, "用户信息表不得大于20MB");
+        }
+        String originalName = StringUtils.isNotBlank(file.getOriginalFilename()) ? file.getOriginalFilename() : file.getName();
+        String suffix = FilenameUtils.getExtension(originalName).toLowerCase();
+        if (!USER_INFO_SUFFIX_LIST.contains(suffix)) {
+            throw new CustomizeReturnException(ReturnCode.USER_UPLOADED_FILE_TYPE_MISMATCH, "用户信息表仅支持xls和xlsx格式");
+        }
+//        userService.adminImportExcelList(file);
+        return R.ok(StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_ADMIN) ? "导入项目经理信息成功" : "导入普通用户信息成功");
     }
 
 }

@@ -14,6 +14,7 @@ import top.sharehome.securityoperation.common.validate.PutGroup;
 import java.io.Serial;
 import java.io.Serializable;
 
+import static top.sharehome.securityoperation.common.base.Constants.REGEX_NUMBER;
 import static top.sharehome.securityoperation.common.base.Constants.REGEX_NUMBER_AND_LETTER;
 
 /**
@@ -28,11 +29,19 @@ import static top.sharehome.securityoperation.common.base.Constants.REGEX_NUMBER
 public class AdminUserAddDto implements Serializable {
 
     /**
+     * 工号
+     */
+    @Size(min = 7, max = 7, message = "工号长度为7位", groups = {PutGroup.class})
+    @NotBlank(message = "工号不能为空", groups = {PutGroup.class})
+    @Pattern(regexp = REGEX_NUMBER, message = "工号仅由数字构成", groups = {PutGroup.class})
+    private String workId;
+
+    /**
      * 账号
      */
     @Size(min = 2, max = 16, message = "账号长度介于2-16位之间", groups = {PostGroup.class})
     @NotBlank(message = "账号不能为空", groups = {PostGroup.class})
-    @Pattern(regexp = REGEX_NUMBER_AND_LETTER, message = "账户名称包含特殊字符", groups = {PostGroup.class})
+    @Pattern(regexp = REGEX_NUMBER_AND_LETTER, message = "用户账号包含特殊字符", groups = {PostGroup.class})
     private String account;
 
     /**

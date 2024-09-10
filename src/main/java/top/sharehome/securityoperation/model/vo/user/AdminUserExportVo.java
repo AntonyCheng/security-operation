@@ -26,6 +26,12 @@ public class AdminUserExportVo implements Serializable {
     private Long id;
 
     /**
+     * 工号
+     */
+    @ExcelProperty(value = "用户工号")
+    private String workId;
+
+    /**
      * 账号
      */
     @ExcelProperty(value = "用户账号")
