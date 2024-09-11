@@ -77,7 +77,7 @@ public class AdminManagerUserController {
     }
 
     /**
-     * 管理员添加用户
+     * 管理员/项目经理添加用户
      *
      * @param adminUserAddDto 被添加用户信息
      * @return 添加结果
@@ -91,7 +91,7 @@ public class AdminManagerUserController {
     }
 
     /**
-     * 管理员根据ID删除用户
+     * 管理员/项目经理根据ID删除用户
      *
      * @param id 被删除用户的ID
      * @return 删除结果
@@ -104,7 +104,7 @@ public class AdminManagerUserController {
     }
 
     /**
-     * 管理员修改用户信息
+     * 管理员/项目经理修改用户信息
      *
      * @param adminUserUpdateInfoDto 被修改后的用户信息
      * @return 修改结果
@@ -117,7 +117,7 @@ public class AdminManagerUserController {
     }
 
     /**
-     * 管理员修改用户状态
+     * 管理员/项目经理修改用户状态
      *
      * @param adminUserUpdateStateDto 被修改用户的ID对象
      * @return 修改结果
@@ -130,7 +130,7 @@ public class AdminManagerUserController {
     }
 
     /**
-     * 管理员重置用户密码
+     * 管理员/项目经理重置用户密码
      *
      * @param adminUserResetPasswordDto 被重置密码信息
      * @return 重置结果
@@ -144,7 +144,7 @@ public class AdminManagerUserController {
     }
 
     /**
-     * 导出用户表格
+     * 管理员导出用户表格
      *
      * @return 导出表格
      */
@@ -157,7 +157,7 @@ public class AdminManagerUserController {
     }
 
     /**
-     * 导出用户表格模板
+     * 管理员/项目经理导出用户表格模板
      *
      * @param response 响应
      */
@@ -169,7 +169,7 @@ public class AdminManagerUserController {
     }
 
     /**
-     * 导入用户表格
+     * 管理员/项目经理导入用户表格
      *
      * @param adminUserInfoDto 管理员添加项目经理/项目经理添加用户Dto类
      * @return 返回导入结果

@@ -17,10 +17,12 @@ import top.sharehome.securityoperation.common.base.ReturnCode;
 import top.sharehome.securityoperation.exception.customize.CustomizeReturnException;
 import top.sharehome.securityoperation.mapper.FileMapper;
 import top.sharehome.securityoperation.mapper.LogMapper;
+import top.sharehome.securityoperation.mapper.ProjectUserMapper;
 import top.sharehome.securityoperation.mapper.UserMapper;
 import top.sharehome.securityoperation.model.dto.user.*;
 import top.sharehome.securityoperation.model.entity.File;
 import top.sharehome.securityoperation.model.entity.Log;
+import top.sharehome.securityoperation.model.entity.ProjectUser;
 import top.sharehome.securityoperation.model.entity.User;
 import top.sharehome.securityoperation.model.page.PageModel;
 import top.sharehome.securityoperation.model.vo.auth.AuthLoginVo;
@@ -53,6 +55,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Resource
     private FileMapper fileMapper;
+
+    @Resource
+    private ProjectUserMapper projectUserMapper;
 
     @Override
     @Transactional(readOnly = true, rollbackFor = Exception.class)
@@ -149,8 +154,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER) && StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_MANAGER)) {
             throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对项目经理进行操作");
         }
-        // 如果是管理员，删除项目经理状态会同时删除项目经理所管辖的用户状态
+        // 如果是管理员删除项目经理，在该项目经理没有项目的情况下删除项目经理所管辖的用户
         if (LoginUtils.isAdmin() && StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER)) {
+            if (projectUserMapper.exists(new LambdaQueryWrapper<ProjectUser>().eq(ProjectUser::getUserId, userInDatabase.getId()))) {
+                throw new CustomizeReturnException(ReturnCode.FAIL, "项目经理目前正绑定项目");
+            }
             LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
             userLambdaQueryWrapper.eq(User::getBelong, userInDatabase.getId());
             userMapper.delete(userLambdaQueryWrapper);
@@ -165,8 +173,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         logLambdaQueryWrapper.eq(Log::getUserId, id);
         logMapper.delete(logLambdaQueryWrapper);
         LoginUtils.logout(id);
-        // 如果业务上有需求在删除用户之后删除用户头像...
-        //MinioUtils.delete(userInDatabase.getAvatar());
+        // 在删除用户之后删除用户头像...
+        if (Objects.nonNull(userInDatabase.getAvatarId())) {
+            MinioUtils.delete(userInDatabase.getAvatarId());
+        }
+        // 在删除普通用户后需要删除所绑定的项目
+        if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_USER)) {
+            projectUserMapper.delete(new LambdaQueryWrapper<ProjectUser>().eq(ProjectUser::getUserId,userInDatabase.getId()));
+        }
     }
 
     @Override
@@ -464,7 +478,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 }
             }).distinct().toList();
             if (Objects.equals(list.size(), 0)) {
-                throw new CustomizeReturnException(ReturnCode.PARAMETER_FORMAT_MISMATCH,"用户信息表数据为空");
+                throw new CustomizeReturnException(ReturnCode.PARAMETER_FORMAT_MISMATCH, "用户信息表数据为空");
             }
             if (!Objects.equals(users.size(), list.size())) {
                 throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "存在" + (users.size() - list.size()) + "条重复数据");

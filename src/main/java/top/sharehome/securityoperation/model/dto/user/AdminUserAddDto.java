@@ -32,9 +32,9 @@ public class AdminUserAddDto implements Serializable {
     /**
      * 工号
      */
-    @Size(min = 7, max = 7, message = "工号长度为7位", groups = {PutGroup.class})
-    @NotBlank(message = "工号不能为空", groups = {PutGroup.class})
-    @Pattern(regexp = REGEX_NUMBER, message = "工号仅由数字构成", groups = {PutGroup.class})
+    @Size(min = 7, max = 7, message = "工号长度为7位", groups = {PostGroup.class})
+    @NotBlank(message = "工号不能为空", groups = {PostGroup.class})
+    @Pattern(regexp = REGEX_NUMBER, message = "工号仅由数字构成", groups = {PostGroup.class})
     private String workId;
 
     /**
@@ -63,8 +63,8 @@ public class AdminUserAddDto implements Serializable {
     /**
      * 名称
      */
-    @Size(min = 1, max = 16, message = "名称长度介于1-16位之间", groups = {PutGroup.class})
-    @NotBlank(message = "名称不能为空", groups = {PutGroup.class})
+    @Size(min = 1, max = 16, message = "名称长度介于1-16位之间", groups = {PostGroup.class})
+    @NotBlank(message = "名称不能为空", groups = {PostGroup.class})
     private String name;
 
     @Serial
