@@ -83,6 +83,12 @@ public class User implements Serializable {
     private Integer state;
 
     /**
+     * 所属上级
+     */
+    @TableField(value = "user_belong")
+    private Long belong;
+
+    /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)

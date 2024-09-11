@@ -164,7 +164,6 @@ public class AuthServiceImpl extends ServiceImpl<UserMapper, User> implements Au
             } else {
                 userLambdaUpdateWrapper
                         .set(User::getState, Constants.USER_DISABLE_STATE)
-                        .set(User::getLoginNum, 0)
                         .eq(User::getAccount, userInDatabase.getAccount());
                 int updateResult = userMapper.update(userLambdaUpdateWrapper);
                 if (updateResult == 0) {

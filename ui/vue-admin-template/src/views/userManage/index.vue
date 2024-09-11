@@ -251,7 +251,7 @@
           :on-success="handleSuccess"
         >
           <i class="el-icon-upload" />
-          <div class="el-upload__text"><em>点击上传</em>（仅支持xls/xlsx文件，且不超过20MB）</div>
+          <div class="el-upload__text"><em>点击上传</em>（仅支持xls/xlsx文件，且不超过200KB）</div>
         </el-upload>
         <div slot="footer" class="dialog-footer">
           <el-button @click="handleExportTemplate">下载模板</el-button>
@@ -559,12 +559,12 @@ export default {
     handleBefore(file) {
       const isXLS = file.name.endsWith('.xls')
       const isXLSX = file.name.endsWith('.xlsx')
-      const isLt20M = file.size / 1024 / 1024 < 20
+      const isLt20M = file.size / 1024 < 200
       if (!isXLS && !isXLSX) {
         this.$message.error('上传文件只能是 XLS 或 XLSX 格式!')
       }
       if (!isLt20M) {
-        this.$message.error('上传文件大小不能超过 20MB!')
+        this.$message.error('上传文件大小不能超过 200KB!')
       }
       return (isXLS || isXLSX) && isLt20M
     },

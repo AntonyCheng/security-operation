@@ -167,6 +167,7 @@ export default {
           }).catch(() => {
             this.loginForm.password = ''
             this.loading = false
+            this.getCaptchaBase64()
           })
         } else {
           console.log('用户账号密码校验失败')

@@ -151,6 +151,7 @@ CREATE TABLE `t_user`  (
   `user_avatar_id` bigint NULL DEFAULT NULL COMMENT '用户头像ID',
   `user_role` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户角色（admin/manager/user）',
   `user_state` tinyint NOT NULL DEFAULT 0 COMMENT '用户状态（0表示启用，1表示禁用）',
+  `user_belong` bigint NOT NULL COMMENT '用户所属上级',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `del_flag` tinyint NOT NULL DEFAULT 0 COMMENT '逻辑删除（0表示未删除，1表示已删除）',
@@ -160,6 +161,8 @@ CREATE TABLE `t_user`  (
 -- ----------------------------
 -- Records of t_user
 -- ----------------------------
-INSERT INTO `t_user` VALUES (1832977688920305666, '0000001', 'admin', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'AntonyCheng', 1833338274703179777, 'admin', 0, '2024-09-09 11:01:51', '2024-09-10 18:47:49', 0);
+INSERT INTO `t_user` VALUES (1832977688920305666, '0000001', 'admin', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'Admin', NULL, 'admin', 0, 0, '2024-09-09 11:01:51', '2024-09-11 08:40:56', 0);
+INSERT INTO `t_user` VALUES (1833529402937270273, '0000002', 'manager', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'Manager', NULL, 'manager', 0, 1832977688920305666, '2024-09-10 23:34:10', '2024-09-11 08:42:08', 0);
+INSERT INTO `t_user` VALUES (1833529674757529602, '0000003', 'user', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'User', NULL, 'user', 0, 1833529402937270273, '2024-09-10 23:35:14', '2024-09-11 08:42:11', 0);
 
 SET FOREIGN_KEY_CHECKS = 1;

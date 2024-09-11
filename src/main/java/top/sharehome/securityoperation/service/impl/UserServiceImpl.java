@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .like(StringUtils.isNotBlank(adminUserPageDto.getAccount()), User::getAccount, adminUserPageDto.getAccount())
                 .like(StringUtils.isNotBlank(adminUserPageDto.getName()), User::getName, adminUserPageDto.getName())
                 .like(StringUtils.isNotBlank(adminUserPageDto.getEmail()), User::getEmail, adminUserPageDto.getEmail());
+
+        // 如果是项目经理，那就仅查询其下属
+        AuthLoginVo loginUser = LoginUtils.getLoginUser();
+        if (StringUtils.equals(loginUser.getRole(), Constants.ROLE_MANAGER)) {
+            userLambdaQueryWrapper.eq(User::getBelong, loginUser.getId());
+        }
+
         // 构造查询排序（默认按照创建时间升序排序）
         userLambdaQueryWrapper.orderByAsc(User::getCreateTime);
 
@@ -113,7 +121,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .setAccount(adminUserAddDto.getAccount())
                 .setPassword(adminUserAddDto.getPassword())
                 .setEmail(adminUserAddDto.getEmail())
-                .setName(adminUserAddDto.getName());
+                .setName(adminUserAddDto.getName())
+                .setBelong(LoginUtils.getLoginUserId());
         if (StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_ADMIN)) {
             user.setRole(Constants.ROLE_MANAGER);
         } else {
@@ -139,6 +148,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 如果是项目经理，还不能对项目经理角色的用户进行操作
         if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER) && StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_MANAGER)) {
             throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对项目经理进行操作");
+        }
+        // 如果是管理员，删除项目经理状态会同时删除项目经理所管辖的用户状态
+        if (LoginUtils.isAdmin() && StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER)) {
+            LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            userLambdaQueryWrapper.eq(User::getBelong, userInDatabase.getId());
+            userMapper.delete(userLambdaQueryWrapper);
         }
         // 删除用户信息
         int userDeleteResult = userMapper.deleteById(id);
@@ -219,17 +234,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER) && StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_MANAGER)) {
             throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "无法对项目经理进行操作");
         }
-        // 根据数据库中用户状态做出更新
-        LambdaUpdateWrapper<User> userLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        // 根据数据库中用户状态做出更新，如果是管理员，更改项目经理状态会同时更改项目经理所管辖的用户状态
+        LambdaUpdateWrapper<User> managerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         if (!Objects.equals(userInDatabase.getState(), Constants.USER_DISABLE_STATE)) {
-            userLambdaUpdateWrapper.set(User::getState, Constants.USER_DISABLE_STATE);
+            if (LoginUtils.isAdmin() && StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER)) {
+                LambdaUpdateWrapper<User> userLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                userLambdaUpdateWrapper.set(User::getState, Constants.USER_DISABLE_STATE)
+                        .eq(User::getBelong, userInDatabase.getId());
+                userMapper.update(userLambdaUpdateWrapper);
+            }
+            managerLambdaUpdateWrapper.set(User::getState, Constants.USER_DISABLE_STATE);
         } else {
-            userLambdaUpdateWrapper
+            if (LoginUtils.isAdmin() && StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_MANAGER)) {
+                LambdaUpdateWrapper<User> userLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                userLambdaUpdateWrapper.set(User::getState, Constants.USER_ENABLE_STATE)
+                        .ne(User::getLoginNum, 5)
+                        .eq(User::getBelong, userInDatabase.getId());
+                userMapper.update(userLambdaUpdateWrapper);
+            }
+            managerLambdaUpdateWrapper
                     .set(User::getState, Constants.USER_ENABLE_STATE)
                     .set(User::getLoginNum, 0);
         }
-        userLambdaUpdateWrapper.eq(User::getId, id);
-        int updateResult = userMapper.update(userLambdaUpdateWrapper);
+        managerLambdaUpdateWrapper.eq(User::getId, id);
+        int updateResult = userMapper.update(managerLambdaUpdateWrapper);
         if (updateResult == 0) {
             throw new CustomizeReturnException(ReturnCode.ERRORS_OCCURRED_IN_THE_DATABASE_SERVICE);
         }
@@ -372,12 +400,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         LoginUtils.syncLoginUser();
     }
 
+    @SneakyThrows
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void adminImportExcelList(MultipartFile file) {
         try {
+            Thread.sleep(10000);
             List<AdminUserImportDto> users = ExcelUtils.importStreamSyncAndClose(file.getInputStream(), AdminUserImportDto.class);
-            String role = LoginUtils.getLoginUser().getRole();
+            AuthLoginVo loginUser = LoginUtils.getLoginUser();
+            Long belong = loginUser.getId();
+            String role = loginUser.getRole();
             List<User> list = users.stream().map(user -> {
                 if (StringUtils.isBlank(user.getWorkId())) {
                     throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在工号不完整");
@@ -394,7 +426,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 if (StringUtils.isBlank(user.getEmail())) {
                     throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在邮箱不完整");
                 }
-                if (!user.getEmail().matches("^[\\w-.]+@[\\w-.]+\\.[a-zA-Z]+$")) {
+                if (!user.getEmail().matches(Constants.REGEX_MAIL)) {
                     throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "存在邮箱格式错误");
                 }
                 if (StringUtils.isBlank(user.getName())) {
@@ -418,7 +450,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                             .setPassword(user.getWorkId())
                             .setEmail(user.getEmail())
                             .setName(user.getName())
-                            .setRole(Constants.ROLE_MANAGER);
+                            .setRole(Constants.ROLE_MANAGER)
+                            .setBelong(belong);
                 } else {
                     return new User()
                             .setWorkId(user.getWorkId())
@@ -426,13 +459,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                             .setPassword(user.getWorkId())
                             .setEmail(user.getEmail())
                             .setName(user.getName())
-                            .setRole(Constants.ROLE_USER);
+                            .setRole(Constants.ROLE_USER)
+                            .setBelong(belong);
                 }
             }).distinct().toList();
+            if (Objects.equals(list.size(), 0)) {
+                throw new CustomizeReturnException(ReturnCode.PARAMETER_FORMAT_MISMATCH,"用户信息表数据为空");
+            }
             if (!Objects.equals(users.size(), list.size())) {
                 throw new CustomizeReturnException(ReturnCode.USERNAME_ALREADY_EXISTS, "存在" + (users.size() - list.size()) + "条重复数据");
             }
-            userMapper.insert(list, 200);
+            userMapper.insert(list, 2000);
         } catch (IOException e) {
             throw new CustomizeReturnException(ReturnCode.EXCEL_FILE_ERROR, "读取用户信息文件出错");
         }

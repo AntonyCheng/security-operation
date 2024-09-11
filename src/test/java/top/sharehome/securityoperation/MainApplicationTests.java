@@ -43,6 +43,8 @@ class MainApplicationTests {
         user.setName("AntonyCheng");
         // 设置管理员状态
         user.setState(0);
+        // 设置管理员所属上级
+        user.setBelong(0L);
         // 设置管理员邮箱
         user.setEmail("temp@163.com");
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -75,6 +77,8 @@ class MainApplicationTests {
                 .set(User::getName, "AntonyCheng")
                 // 修改管理员状态
                 .set(User::getState, 0)
+                // 修改管理员所属上级
+                .set(User::getBelong, 0L)
                 // 修改管理员邮箱
                 .set(User::getEmail, "temp@163.com");
         authService.update(userLambdaUpdateWrapper);

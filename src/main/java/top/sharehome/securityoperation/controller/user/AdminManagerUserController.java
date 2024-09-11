@@ -17,6 +17,8 @@ import top.sharehome.securityoperation.common.base.ReturnCode;
 import top.sharehome.securityoperation.common.validate.PostGroup;
 import top.sharehome.securityoperation.common.validate.PutGroup;
 import top.sharehome.securityoperation.config.encrypt.annotation.RSADecrypt;
+import top.sharehome.securityoperation.config.idempotent.annotation.Idempotent;
+import top.sharehome.securityoperation.config.idempotent.annotation.PreventRepeat;
 import top.sharehome.securityoperation.config.log.annotation.ControllerLog;
 import top.sharehome.securityoperation.config.log.enums.Operator;
 import top.sharehome.securityoperation.exception.customize.CustomizeReturnException;
@@ -32,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 管理员管理用户控制器
+ * 管理员/项目经理管理用户控制器
  *
  * @author AntonyCheng
  */
@@ -40,12 +42,12 @@ import java.util.List;
 @RequestMapping("/admin/user")
 @SaCheckLogin
 @SaCheckRole(value = {Constants.ROLE_ADMIN, Constants.ROLE_MANAGER}, mode = SaMode.OR)
-public class AdminUserController {
+public class AdminManagerUserController {
 
     /**
      * 用户信息文件最大大小
      */
-    private static final int USER_INFO_MAX_SIZE = 20 * 1024 * 1024;
+    private static final int USER_INFO_MAX_SIZE = 200 * 1024;
 
     /**
      * 用户信息文件后缀集合
@@ -61,7 +63,7 @@ public class AdminUserController {
     private UserService userService;
 
     /**
-     * 管理员分页查询用户信息
+     * 管理员/项目经理分页查询用户信息
      *
      * @param adminUserPageDto 用户信息查询条件
      * @param pageModel        分页模型
@@ -174,6 +176,7 @@ public class AdminUserController {
      */
     @PostMapping("/import")
     @ControllerLog(description = "管理员/项目经理导入用户表格", operator = Operator.IMPORT)
+    @Idempotent(time = 20000,message = "20秒内不能重复提交用户信息表")
     public R<String> importUser(@Validated({PostGroup.class}) AdminUserInfoDto adminUserInfoDto) {
         MultipartFile file = adminUserInfoDto.getFile();
         if (file.getSize() == 0 || file.getSize() > USER_INFO_MAX_SIZE) {

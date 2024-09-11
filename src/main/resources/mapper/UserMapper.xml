@@ -12,6 +12,7 @@
         <result column="user_avatar_id" jdbcType="VARCHAR" property="avatarId"/>
         <result column="user_role" jdbcType="VARCHAR" property="role"/>
         <result column="user_state" jdbcType="TINYINT" property="state"/>
+        <result column="user_belong" jdbcType="BIGINT" property="belong"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="del_flag" jdbcType="TINYINT" property="delFlag"/>
@@ -27,6 +28,7 @@
         user_avatar_id,
         user_role,
         user_state,
+        user_belong,
         create_time,
         update_time,
         del_flag
