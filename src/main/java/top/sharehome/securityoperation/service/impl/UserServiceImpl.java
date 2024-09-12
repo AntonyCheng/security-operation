@@ -27,6 +27,7 @@ import top.sharehome.securityoperation.model.entity.User;
 import top.sharehome.securityoperation.model.page.PageModel;
 import top.sharehome.securityoperation.model.vo.auth.AuthLoginVo;
 import top.sharehome.securityoperation.model.vo.user.AdminUserExportVo;
+import top.sharehome.securityoperation.model.vo.user.AdminUserListVo;
 import top.sharehome.securityoperation.model.vo.user.AdminUserPageVo;
 import top.sharehome.securityoperation.service.UserService;
 import top.sharehome.securityoperation.utils.document.excel.ExcelUtils;
@@ -109,6 +110,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public List<AdminUserListVo> adminListUser(AdminUserListDto adminUserListDto) {
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        // 构造查询条件
+        userLambdaQueryWrapper
+                .eq(StringUtils.isNotBlank(adminUserListDto.getWorkId()), User::getWorkId, adminUserListDto.getWorkId())
+                .eq(StringUtils.isNotBlank(adminUserListDto.getRole()), User::getRole, adminUserListDto.getRole())
+                .eq(Objects.nonNull(adminUserListDto.getState()), User::getState, adminUserListDto.getState())
+                .like(StringUtils.isNotBlank(adminUserListDto.getAccount()), User::getAccount, adminUserListDto.getAccount())
+                .like(StringUtils.isNotBlank(adminUserListDto.getName()), User::getName, adminUserListDto.getName())
+                .like(StringUtils.isNotBlank(adminUserListDto.getEmail()), User::getEmail, adminUserListDto.getEmail());
+
+        // 如果是项目经理，那就仅查询其下属
+        AuthLoginVo loginUser = LoginUtils.getLoginUser();
+        if (StringUtils.equals(loginUser.getRole(), Constants.ROLE_MANAGER)) {
+            userLambdaQueryWrapper.eq(User::getBelong, loginUser.getId());
+        }
+
+        // 构造查询排序（默认按照创建时间升序排序）
+        userLambdaQueryWrapper.orderByAsc(User::getCreateTime);
+
+        // 列表查询
+        return userMapper.selectList(userLambdaQueryWrapper).stream().map(user -> new AdminUserListVo()
+                .setId(user.getId())
+                .setWorkId(user.getWorkId())
+                .setAccount(user.getAccount())
+                .setName(user.getName())
+                .setEmail(user.getEmail())
+                .setRole(user.getRole())).toList();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void adminAddUser(AdminUserAddDto adminUserAddDto) {
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -179,7 +212,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 在删除普通用户后需要删除所绑定的项目
         if (StringUtils.equals(userInDatabase.getRole(), Constants.ROLE_USER)) {
-            projectUserMapper.delete(new LambdaQueryWrapper<ProjectUser>().eq(ProjectUser::getUserId,userInDatabase.getId()));
+            projectUserMapper.delete(new LambdaQueryWrapper<ProjectUser>().eq(ProjectUser::getUserId, userInDatabase.getId()));
         }
     }
 
@@ -308,6 +341,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public List<AdminUserExportVo> adminExportExcelList() {
         if (!StringUtils.equals(LoginUtils.getLoginUser().getRole(), Constants.ROLE_ADMIN)) {
             throw new CustomizeReturnException(ReturnCode.ABNORMAL_USER_OPERATION, "仅管理员允许操作导出");

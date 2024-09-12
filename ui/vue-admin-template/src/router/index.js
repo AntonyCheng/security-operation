@@ -73,6 +73,19 @@ export const constantRoutes = [
     role: ['admin', 'manager']
   },
   {
+    path: '/project',
+    component: Layout,
+    children: [
+      {
+        path: 'manage',
+        name: 'ProjectManage',
+        component: () => import('@/views/projectManage/index'),
+        meta: { title: '项目管理', icon: 'el-icon-s-management' }
+      }
+    ],
+    role: ['admin', 'manager']
+  },
+  {
     path: '/log',
     component: Layout,
     children: [

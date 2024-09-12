@@ -18,13 +18,13 @@ import top.sharehome.securityoperation.common.validate.PostGroup;
 import top.sharehome.securityoperation.common.validate.PutGroup;
 import top.sharehome.securityoperation.config.encrypt.annotation.RSADecrypt;
 import top.sharehome.securityoperation.config.idempotent.annotation.Idempotent;
-import top.sharehome.securityoperation.config.idempotent.annotation.PreventRepeat;
 import top.sharehome.securityoperation.config.log.annotation.ControllerLog;
 import top.sharehome.securityoperation.config.log.enums.Operator;
 import top.sharehome.securityoperation.exception.customize.CustomizeReturnException;
 import top.sharehome.securityoperation.model.dto.user.*;
 import top.sharehome.securityoperation.model.page.PageModel;
 import top.sharehome.securityoperation.model.vo.user.AdminUserExportVo;
+import top.sharehome.securityoperation.model.vo.user.AdminUserListVo;
 import top.sharehome.securityoperation.model.vo.user.AdminUserPageVo;
 import top.sharehome.securityoperation.service.UserService;
 import top.sharehome.securityoperation.utils.document.excel.ExcelUtils;
@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 管理员/项目经理管理用户控制器
+ * 管理员或项目经理管理用户控制器
  *
  * @author AntonyCheng
  */
@@ -70,10 +70,23 @@ public class AdminManagerUserController {
      * @return 分页查询结果
      */
     @GetMapping("/page")
-    @ControllerLog(description = "管理员/项目经理查询用户信息", operator = Operator.QUERY)
+    @ControllerLog(description = "管理员/项目经理分页查询用户信息", operator = Operator.QUERY)
     public R<Page<AdminUserPageVo>> pageUser(AdminUserPageDto adminUserPageDto, PageModel pageModel) {
         Page<AdminUserPageVo> page = userService.adminPageUser(adminUserPageDto, pageModel);
         return R.ok(page);
+    }
+
+    /**
+     * 管理员/项目经理列表查询用户信息
+     *
+     * @param adminUserListDto 用户信息查询条件
+     * @return 列表查询结果
+     */
+    @GetMapping("/list")
+    @ControllerLog(description = "管理员/项目经理列表查询用户信息", operator = Operator.QUERY)
+    public R<List<AdminUserListVo>> listUser(AdminUserListDto adminUserListDto) {
+        List<AdminUserListVo> list = userService.adminListUser(adminUserListDto);
+        return R.ok(list);
     }
 
     /**
@@ -176,7 +189,7 @@ public class AdminManagerUserController {
      */
     @PostMapping("/import")
     @ControllerLog(description = "管理员/项目经理导入用户表格", operator = Operator.IMPORT)
-    @Idempotent(time = 20000,message = "20秒内不能重复提交用户信息表")
+    @Idempotent(time = 20000, message = "20秒内不能重复提交用户信息表")
     public R<String> importUser(@Validated({PostGroup.class}) AdminUserInfoDto adminUserInfoDto) {
         MultipartFile file = adminUserInfoDto.getFile();
         if (file.getSize() == 0 || file.getSize() > USER_INFO_MAX_SIZE) {

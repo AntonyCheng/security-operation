@@ -48,6 +48,14 @@ export function adminPageUser(data) {
   })
 }
 
+export function adminListUser(data) {
+  return request({
+    url: '/admin/user/list',
+    method: 'get',
+    params: data
+  })
+}
+
 export function adminAddUser(data) {
   return request({
     url: '/admin/user/add',

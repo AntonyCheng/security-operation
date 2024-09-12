@@ -161,8 +161,8 @@ CREATE TABLE `t_user`  (
 -- ----------------------------
 -- Records of t_user
 -- ----------------------------
-INSERT INTO `t_user` VALUES (1832977688920305666, '0000001', 'admin', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'Admin', NULL, 'admin', 0, 0, '2024-09-09 11:01:51', '2024-09-11 08:40:56', 0);
-INSERT INTO `t_user` VALUES (1833529402937270273, '0000002', 'manager', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'Manager', NULL, 'manager', 0, 1832977688920305666, '2024-09-10 23:34:10', '2024-09-11 08:42:08', 0);
-INSERT INTO `t_user` VALUES (1833529674757529602, '0000003', 'user', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, 'User', NULL, 'user', 0, 1833529402937270273, '2024-09-10 23:35:14', '2024-09-11 08:42:11', 0);
+INSERT INTO `t_user` VALUES (1832977688920305666, '0000000', 'admin', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, '超级管理员', 1834069540549406721, 'admin', 0, 0, '2024-09-09 11:01:51', '2024-09-12 23:34:27', 0);
+INSERT INTO `t_user` VALUES (1833529402937270273, '1000000', 'manager', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, '项目经理', NULL, 'manager', 0, 1832977688920305666, '2024-09-10 23:34:10', '2024-09-12 23:34:05', 0);
+INSERT INTO `t_user` VALUES (1833529674757529602, '0000001', 'user', 'CAZnvOb6ncm+mFRxyFfQOQ==', '1911261716@qq.com', 0, '普通用户', NULL, 'user', 0, 1833529402937270273, '2024-09-10 23:35:14', '2024-09-13 00:03:38', 0);
 
 SET FOREIGN_KEY_CHECKS = 1;

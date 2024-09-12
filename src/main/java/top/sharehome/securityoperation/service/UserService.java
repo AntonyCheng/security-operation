@@ -7,6 +7,7 @@ import top.sharehome.securityoperation.model.dto.user.*;
 import top.sharehome.securityoperation.model.entity.User;
 import top.sharehome.securityoperation.model.page.PageModel;
 import top.sharehome.securityoperation.model.vo.user.AdminUserExportVo;
+import top.sharehome.securityoperation.model.vo.user.AdminUserListVo;
 import top.sharehome.securityoperation.model.vo.user.AdminUserPageVo;
 
 import java.util.List;
@@ -26,6 +27,14 @@ public interface UserService extends IService<User> {
      * @return 分页查询结果
      */
     Page<AdminUserPageVo> adminPageUser(AdminUserPageDto adminUserPageDto, PageModel pageModel);
+
+    /**
+     * 管理员/项目经理列表查询用户信息
+     *
+     * @param adminUserListDto 用户信息查询条件
+     * @return 列表查询结果
+     */
+    List<AdminUserListVo> adminListUser(AdminUserListDto adminUserListDto);
 
     /**
      * 管理员添加用户
@@ -113,4 +122,5 @@ public interface UserService extends IService<User> {
      * @param file 用户信息表文件
      */
     void adminImportExcelList(MultipartFile file);
+
 }

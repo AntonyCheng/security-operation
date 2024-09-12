@@ -41,8 +41,8 @@ public class AdminProjectAddDto implements Serializable {
     /**
      * 项目仓库地址
      */
-    @Size(min = 7, max = 255, message = "仓库地址长度介于7-225位之间", groups = {PostGroup.class})
-    @NotBlank(message = "仓库地址不能为空", groups = {PostGroup.class})
+//    @Size(min = 7, max = 255, message = "仓库地址长度介于7-225位之间", groups = {PostGroup.class})
+//    @NotBlank(message = "仓库地址不能为空", groups = {PostGroup.class})
     @Pattern(regexp = "^(http://|https://)[\\w-]+(\\.[\\w-]+)+([\\w-.,@?^=%&:/~+#]*[\\w-@?^=%&/~+#])?$", message = "仓库地址格式错误", groups = {PostGroup.class})
     private String url;
 

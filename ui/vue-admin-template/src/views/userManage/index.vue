@@ -241,6 +241,7 @@
     <template>
       <el-dialog :show-close="false" title="导入用户" :visible.sync="importDialogVisible" @close="handleCancelImport">
         <el-upload
+          v-loading="importLoading"
           drag
           action=""
           :limit="1"
@@ -364,6 +365,7 @@ export default {
       queryLoading: false,
       updateLoading: false,
       pageLoading: false,
+      importLoading: false,
       queryResult: [],
       queryForm: {
         workId: undefined,
@@ -531,7 +533,7 @@ export default {
             email: this.addForm.email
           }
           adminAddUser(data).then(response => {
-            if (this.queryResult.total % this.queryResult.size === 0) {
+            if (this.queryResult.total !== 0 && this.queryResult.total % this.queryResult.size === 0) {
               this.queryForm.page++
             }
             this.pageLoading = true
@@ -559,33 +561,36 @@ export default {
     handleBefore(file) {
       const isXLS = file.name.endsWith('.xls')
       const isXLSX = file.name.endsWith('.xlsx')
-      const isLt20M = file.size / 1024 < 200
+      const isLt20K = file.size / 1024 < 200
       if (!isXLS && !isXLSX) {
         this.$message.error('上传文件只能是 XLS 或 XLSX 格式!')
       }
-      if (!isLt20M) {
+      if (!isLt20K) {
         this.$message.error('上传文件大小不能超过 200KB!')
       }
-      return (isXLS || isXLSX) && isLt20M
+      return (isXLS || isXLSX) && isLt20K
     },
-    handleSubmit(options) {
+    async handleSubmit(options) {
       const { file } = options
       const formData = new FormData()
       formData.append('file', file)
-      return adminImportUser(formData).then(response => {
+      try {
+        this.importDialogVisible = false
+        this.importLoading = true
+        Message.warning('文件上传中，请勿重复上传，请稍后...')
+        const response = await adminImportUser(formData)
         this.fileList = []
         this.pageLoading = true
         adminPageUser(this.queryForm).then(response => {
           this.queryResult = response.data
+          this.importLoading = false
           this.pageLoading = false
         })
         Message.success(response.msg)
-      }).catch(error => {
+      } catch (error) {
         this.fileList = []
         return error
-      }).finally(() => {
-        this.importDialogVisible = false
-      })
+      }
     },
     handleSuccess(response) {
       console.log('response:', response)

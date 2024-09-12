@@ -34,7 +34,8 @@ const RESPONSE_URI_WHITE_LIST = [
   '/admin/user/export',
   '/admin/user/template',
   '/admin/log/export',
-  '/admin/file/export'
+  '/admin/file/export',
+  '/admin/project/export'
 ]
 
 // response interceptor
