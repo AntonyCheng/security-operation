@@ -49,6 +49,35 @@
                         />
                       </el-select>
                     </el-form-item>
+                    <el-form-item v-if="role === 'admin'" label="上级">
+                      <el-select
+                        v-model="queryForm.belongId"
+                        clearable
+                        filterable
+                        remote
+                        reserve-keyword
+                        placeholder="请搜索上级管理者，进而查询其下属用户"
+                        :remote-method="(query) => getUserByName(query)"
+                        :loading="queryListLoading"
+                        style="width: 300px"
+                      >
+                        <el-option v-for="item in userList" :key="item.id" :label="item.name+'（'+(item.role === 'admin'?'超级管理员' : item.role === 'manager' ? '项目经理':'普通用户')+'）'" :value="item.id">
+                          <span style="float: left">{{ item.name }}</span>
+                          <el-divider direction="vertical" />
+                          <span style="float: none;color: #909399;font-size: 13px;">
+                            工号：{{ item.workId }}
+                          </span>
+                          <el-divider direction="vertical" />
+                          <span style="float: none;color: #909399;font-size: 13px;">
+                            账号：{{ item.account }}
+                          </span>
+                          <el-divider direction="vertical" />
+                          <span style="float: none;color: #909399;font-size: 13px;">
+                            角色：{{ item.role === 'admin'?'超级管理员' : item.role === 'manager' ? '项目经理':'普通用户' }}
+                          </span>
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
                   </el-form>
                 </el-col>
                 <el-col :span="6" style="text-align: center">
@@ -350,7 +379,7 @@ import {
   adminUpdateInfo,
   adminUpdateState,
   adminExportUserTemplate,
-  adminImportUser
+  adminImportUser, adminListUser
 } from '@/api/user'
 import { Loading, Message } from 'element-ui'
 import { getRsaKey } from '@/api/encrypt'
@@ -363,10 +392,12 @@ export default {
       fileList: [],
       addLoading: false,
       queryLoading: false,
+      queryListLoading: false,
       updateLoading: false,
       pageLoading: false,
       importLoading: false,
       queryResult: [],
+      userList: [],
       queryForm: {
         workId: undefined,
         account: undefined,
@@ -374,6 +405,7 @@ export default {
         email: undefined,
         role: undefined,
         state: undefined,
+        belongId: undefined,
         page: 1,
         size: 10,
         allowDeep: false
@@ -458,7 +490,8 @@ export default {
         this.queryForm.state === undefined &&
         this.queryForm.name === undefined &&
         this.queryForm.email === undefined &&
-        this.queryForm.role === undefined
+        this.queryForm.role === undefined &&
+        this.queryForm.belongId === undefined
       ) {
         return
       }
@@ -478,7 +511,8 @@ export default {
         this.queryForm.state === undefined &&
         this.queryForm.name === undefined &&
         this.queryForm.email === undefined &&
-        this.queryForm.role === undefined
+        this.queryForm.role === undefined &&
+        this.queryForm.belongId === undefined
       ) {
         return
       }
@@ -488,6 +522,16 @@ export default {
         this.queryResult = response.data
         this.pageLoading = false
       })
+    },
+    async getUserByName(query) {
+      if (query) {
+        const data = {
+          name: query
+        }
+        this.userList = await adminListUser(data).then(response => {
+          return response.data
+        })
+      }
     },
     handleExport() {
       const downloadLoadingInstance = Loading.service({
@@ -746,6 +790,7 @@ export default {
       this.queryForm.email = undefined
       this.queryForm.role = undefined
       this.queryForm.state = undefined
+      this.queryForm.belongId = undefined
       this.queryForm.page = 1
     },
     async resetAddForm() {

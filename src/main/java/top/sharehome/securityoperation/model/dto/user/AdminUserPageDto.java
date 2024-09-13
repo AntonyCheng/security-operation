@@ -45,6 +45,11 @@ public class AdminUserPageDto implements Serializable {
     private String role;
 
     /**
+     * 上级用户ID（eq）
+     */
+    private Long belongId;
+
+    /**
      * 用户状态（eq）
      */
     private Integer state;

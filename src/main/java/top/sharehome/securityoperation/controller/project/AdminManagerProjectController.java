@@ -22,6 +22,7 @@ import top.sharehome.securityoperation.model.dto.projectUser.AdminProjectUserAdd
 import top.sharehome.securityoperation.model.dto.projectUser.AdminProjectUserDeleteDto;
 import top.sharehome.securityoperation.model.page.PageModel;
 import top.sharehome.securityoperation.model.vo.project.AdminProjectExportVo;
+import top.sharehome.securityoperation.model.vo.project.AdminProjectListVo;
 import top.sharehome.securityoperation.model.vo.project.AdminProjectPageVo;
 import top.sharehome.securityoperation.service.ProjectService;
 import top.sharehome.securityoperation.utils.document.excel.ExcelUtils;
@@ -49,12 +50,26 @@ public class AdminManagerProjectController {
      * @return 分页查询结果
      */
     @GetMapping("/page")
-    @ControllerLog(description = "管理员/项目经理查询项目信息", operator = Operator.QUERY)
+    @ControllerLog(description = "管理员/项目经理分页查询项目信息", operator = Operator.QUERY)
     @SaCheckRole(value = {Constants.ROLE_ADMIN, Constants.ROLE_MANAGER}, mode = SaMode.OR)
     public R<Page<AdminProjectPageVo>> pageProject(AdminProjectPageDto adminProjectPageDto, PageModel pageModel) {
         Page<AdminProjectPageVo> page = projectService.adminPageProject(adminProjectPageDto, pageModel);
         return R.ok(page);
     }
+
+//    /**
+//     * 项目经理列表查询项目信息
+//     *
+//     * @param adminProjectListDto 项目信息查询条件
+//     * @return 列表查询结果
+//     */
+//    @GetMapping("/list")
+//    @ControllerLog(description = "项目经理列表查询项目信息", operator = Operator.QUERY)
+//    @SaCheckRole(value = {Constants.ROLE_MANAGER})
+//    public R<List<AdminProjectListVo>> listProject(AdminProjectListDto adminProjectListDto) {
+//        List<AdminProjectListVo> list = projectService.adminListProject(adminProjectListDto);
+//        return R.ok(list);
+//    }
 
     /**
      * 项目经理添加项目信息
@@ -119,7 +134,7 @@ public class AdminManagerProjectController {
      * @return 修改结果
      */
     @PutMapping("/update")
-    @ControllerLog(description = "项目经理修改项目信息", operator = Operator.DELETE)
+    @ControllerLog(description = "项目经理修改项目信息", operator = Operator.UPDATE)
     @SaCheckRole(value = {Constants.ROLE_MANAGER})
     public R<String> updateProject(@RequestBody @Validated({PutGroup.class}) AdminProjectUpdateDto adminProjectUpdateDto) {
         projectService.adminUpdateProject(adminProjectUpdateDto);

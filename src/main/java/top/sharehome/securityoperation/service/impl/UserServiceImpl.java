@@ -76,10 +76,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .like(StringUtils.isNotBlank(adminUserPageDto.getName()), User::getName, adminUserPageDto.getName())
                 .like(StringUtils.isNotBlank(adminUserPageDto.getEmail()), User::getEmail, adminUserPageDto.getEmail());
 
-        // 如果是项目经理，那就仅查询其下属
+        // 如果是项目经理，那就仅查询其下属，如果是管理员，就允许其查询上级所属用户
         AuthLoginVo loginUser = LoginUtils.getLoginUser();
         if (StringUtils.equals(loginUser.getRole(), Constants.ROLE_MANAGER)) {
             userLambdaQueryWrapper.eq(User::getBelong, loginUser.getId());
+        } else {
+            userLambdaQueryWrapper.eq(Objects.nonNull(adminUserPageDto.getBelongId()), User::getBelong, adminUserPageDto.getBelongId());
         }
 
         // 构造查询排序（默认按照创建时间升序排序）

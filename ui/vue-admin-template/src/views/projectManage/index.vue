@@ -117,7 +117,6 @@
         style="width: 100%"
       >
         <el-table-column
-          v-if="false"
           prop="id"
           label="ID"
           align="center"
@@ -172,7 +171,7 @@
         <el-table-column
           fixed="right"
           label="操作"
-          width="350"
+          width="250"
         >
           <template #default="scope">
             <el-button v-if="role === 'manager'" type="primary" size="mini" @click="openUpdateDialog(scope.row)">修改</el-button>
