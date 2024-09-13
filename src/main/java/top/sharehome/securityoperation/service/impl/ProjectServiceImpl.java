@@ -107,8 +107,11 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project> impl
             projectUserLambdaQueryWrapper
                     .eq(ProjectUser::getProjectId, project.getId())
                     .orderByAsc(ProjectUser::getCreateTime);
-            Map<String, String> userInfo = projectUserMapper.selectList(projectUserLambdaQueryWrapper).stream().map(projectUser -> userMapper.selectById(projectUser.getUserId())).collect(Collectors.toMap(user -> Long.toString(user.getId()), user -> user.getName() + " | " + user.getWorkId()));
-            userInfo.remove(Long.toString(loginUser.getId()));
+            Map<String, String> userInfo = projectUserMapper.selectList(projectUserLambdaQueryWrapper)
+                    .stream()
+                    .map(projectUser -> userMapper.selectById(projectUser.getUserId()))
+                    .filter(user -> !StringUtils.equals(user.getRole(), Constants.ROLE_MANAGER))
+                    .collect(Collectors.toMap(user -> Long.toString(user.getId()), user -> user.getName() + " | " + user.getWorkId()));
             return new AdminProjectPageVo()
                     .setId(project.getId())
                     .setName(project.getName())

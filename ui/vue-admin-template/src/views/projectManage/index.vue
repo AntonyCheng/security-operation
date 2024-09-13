@@ -180,11 +180,11 @@
             <el-button v-if="role === 'manager'" type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
             <el-divider v-if="role === 'manager'" direction="vertical" />
             <el-dropdown v-if="role === 'manager'" @command="(data)=>void openMemberDialog(data,scope.row)">
-              <el-button type="primary" size="mini">
+              <el-button type="success" size="mini">
                 成员信息
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="add">新增</el-dropdown-item>
+                <el-dropdown-item command="add">添加</el-dropdown-item>
                 <el-dropdown-item command="delete">删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
@@ -281,6 +281,81 @@
         </div>
       </el-dialog>
     </template>
+    <template>
+      <el-dialog :show-close="false" :title="memberOperation === 'add'?'添加项目成员':'删除项目成员'" :visible.sync="updateMemberDialogVisible" @close="handleCancelUpdateMember">
+        <el-form v-if="memberOperation === 'add'" ref="updateMemberForm" :model="updateMemberForm" label-width="80px">
+          <el-form-item
+            label="项目ID"
+            prop="id"
+          >
+            <el-input v-model="updateMemberForm.id" disabled />
+          </el-form-item>
+          <el-form-item
+            label="新成员"
+            prop="id"
+          >
+            <el-select
+              v-model="updateMemberForm.newUsers"
+              clearable
+              multiple
+              filterable
+              remote
+              reserve-keyword
+              placeholder="请搜索新成员"
+              :multiple-limit="10"
+              :remote-method="(query) => getUserByName(query)"
+              :loading="queryListLoading"
+              style="width: 100%"
+            >
+              <el-option v-for="item in userList" :key="item.id" :label="item.name+'（'+(item.role === 'manager'? '项目经理':'普通用户')+'）'" :value="item.id">
+                <span style="float: left">{{ item.name }}</span>
+                <el-divider direction="vertical" />
+                <span style="float: none;color: #909399;font-size: 13px;">
+                  工号：{{ item.workId }}
+                </span>
+                <el-divider direction="vertical" />
+                <span style="float: none;color: #909399;font-size: 13px;">
+                  账号：{{ item.account }}
+                </span>
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <el-form v-else ref="updateMemberForm" :model="updateMemberForm" label-width="80px">
+          <el-form-item
+            label="项目ID"
+            prop="id"
+          >
+            <el-input v-model="updateMemberForm.id" disabled />
+          </el-form-item>
+          <el-form-item
+            label="成员列表"
+            prop="userInfoJson"
+          >
+            <el-table
+              v-if="updateMemberForm.userInfoJson && Object.keys(updateMemberForm.userInfoJson).length > 0"
+              :data="formatUserInfoJson(updateMemberForm.userInfoJson)"
+            >
+              <el-table-column prop="key" label="ID" align="center" />
+              <el-table-column prop="value" label="名称 | 工号" align="center" />
+              <el-table-column
+                fixed="right"
+                label="操作"
+              >
+                <template #default="scope">
+                  <el-button type="danger" size="mini" @click="handleDeleteMember(updateMemberForm.id,scope.row.key)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div v-else>暂无成员信息</div>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="handleCancelUpdateMember">取 消</el-button>
+          <el-button v-if="memberOperation === 'add'" type="primary" :loading="updateMemberLoading" @click="handleUpdateMember">添 加</el-button>
+        </div>
+      </el-dialog>
+    </template>
   </div>
 </template>
 
@@ -288,8 +363,8 @@
 import { mapGetters } from 'vuex'
 import { Loading, Message } from 'element-ui'
 import {
-  adminAddProject,
-  adminDeleteProject,
+  adminAddProject, adminAddProjectUser,
+  adminDeleteProject, adminDeleteProjectUser,
   adminExportExcel,
   adminPageProject,
   adminUpdateProject
@@ -305,6 +380,7 @@ export default {
       queryLoading: false,
       queryListLoading: false,
       updateLoading: false,
+      updateMemberLoading: false,
       pageLoading: false,
       queryResult: [],
       userList: [],
@@ -326,12 +402,18 @@ export default {
       },
       importDialogVisible: false,
       updateDialogVisible: false,
-      updateType: undefined,
       updateForm: {
         id: undefined,
         name: undefined,
         description: undefined,
         url: undefined
+      },
+      memberOperation: undefined,
+      updateMemberDialogVisible: false,
+      updateMemberForm: {
+        id: undefined,
+        newUsers: undefined,
+        userInfoJson: undefined
       }
     }
   },
@@ -526,6 +608,68 @@ export default {
         })
       })
     },
+    openMemberDialog(data1, data2) {
+      this.memberOperation = data1
+      this.updateMemberForm.id = data2.id
+      if (data1 === 'delete') {
+        this.updateMemberForm.userInfoJson = data2.userInfoJson
+      }
+      this.updateMemberDialogVisible = true
+    },
+    handleUpdateMember() {
+      this.$refs['updateMemberForm'].validate(valid => {
+        if (valid) {
+          this.updateMemberLoading = true
+          const data = {
+            projectId: this.updateMemberForm.id,
+            userIds: this.updateMemberForm.newUsers
+          }
+          if (data.userIds.length !== 0) {
+            adminAddProjectUser(data).then(response => {
+              this.pageLoading = true
+              adminPageProject(this.queryForm).then(response => {
+                this.queryResult = response.data
+                this.pageLoading = false
+              })
+              this.resetUpdateForm()
+              this.updateMemberDialogVisible = false
+              Message.success(response.msg)
+            }).finally(() => {
+              this.updateMemberLoading = false
+            })
+          } else {
+            this.resetUpdateForm()
+            this.updateMemberDialogVisible = false
+          }
+        }
+      })
+    },
+    handleDeleteMember(data1, data2) {
+      this.updateMemberLoading = true
+      const data = {
+        projectId: data1,
+        userId: data2
+      }
+      console.log(data)
+      adminDeleteProjectUser(data).then(response => {
+        this.pageLoading = true
+        adminPageProject(this.queryForm).then(response => {
+          this.queryResult = response.data
+          this.pageLoading = false
+        })
+        this.resetUpdateForm()
+        this.updateMemberDialogVisible = false
+        Message.success(response.msg)
+      }).finally(() => {
+        this.updateMemberLoading = false
+      })
+    },
+    handleCancelUpdateMember() {
+      this.$refs['updateMemberForm'].resetFields()
+      this.updateMemberDialogVisible = false
+      this.resetUpdateMemberForm()
+      this.updateMemberLoading = false
+    },
     handleSizeChange(val) {
       this.queryForm.size = val
       this.pageLoading = true
@@ -560,6 +704,11 @@ export default {
       this.updateForm.name = undefined
       this.updateForm.description = undefined
       this.updateForm.url = undefined
+    },
+    async resetUpdateMemberForm() {
+      this.updateMemberForm.id = undefined
+      this.updateMemberForm.newUsers = undefined
+      this.updateMemberForm.userInfoJson = undefined
     }
   }
 }
